@@ -46,6 +46,8 @@
     <Compile Include="menubillm.cs" />
     <Compile Include="menuplace.cs" />
     <Compile Include="menutype.cs" />
+    <Compile Include="Parms\baseparm.cs" />
+    <Compile Include="Parms\shipclass_parm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="shipclass.cs" />
     <Compile Include="xmtype.cs" />
