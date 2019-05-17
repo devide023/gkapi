@@ -8,7 +8,7 @@ using GK.Service;
 using GK.Model;
 using GK.Model.Parms;
 using GK.DAO;
-namespace GoldKeyWebApi.Controllers
+namespace GoldKeyWebApi.Controllers.Consume
 {
     [RoutePrefix("api/consume")]
     public class ConsumeMgrController : ApiController

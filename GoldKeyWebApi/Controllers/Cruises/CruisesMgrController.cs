@@ -9,7 +9,7 @@ using GK.Model.Parms;
 using GK.Service;
 using Dapper;
 
-namespace GoldKeyWebApi.Controllers
+namespace GoldKeyWebApi.Controllers.Cruises
 {
     [RoutePrefix("api/cruises")]
     public class CruisesMgrController : ApiController
