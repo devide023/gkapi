@@ -17,7 +17,13 @@ namespace GK.Model
         public string remark { get; set; }
         public string tag { get; set; }
         public string checkno { get; set; }
+        /// <summary>
+        /// 结账额
+        /// </summary>
         public decimal tcurr { get; set; }
+        /// <summary>
+        /// 总金额
+        /// </summary>
         public decimal tcurr0 { get; set; }
         public decimal num { get; set; }
         public string guestname { get; set; }
@@ -45,7 +51,13 @@ namespace GK.Model
         public decimal zkmandiscount { get; set; }
         public string sc { get; set; }
         public string jstype { get; set; }
+        /// <summary>
+        /// 应收金额
+        /// </summary>
         public decimal curr0 { get; set; }
+        /// <summary>
+        /// 折扣金额
+        /// </summary>
         public decimal cutcurr { get; set; }
         public string xsnoteno { get; set; }
         public string xsperiod { get; set; }
