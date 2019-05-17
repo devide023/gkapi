@@ -11,7 +11,7 @@ using Dapper;
 
 namespace GoldKeyWebApi.Controllers
 {
-    [RoutePrefix("api/cruisesmgr")]
+    [RoutePrefix("api/cruises")]
     public class CruisesMgrController : ApiController
     {
         /// <summary>
@@ -19,7 +19,7 @@ namespace GoldKeyWebApi.Controllers
         /// </summary>
         /// <param name="parm"></param>
         /// <returns></returns>
-        [Route("shipclass_list")]
+        [Route("shipclass")]
         [HttpPost]
         public IHttpActionResult Get_ShipClass_List(shipclass_parm parm)
         {
