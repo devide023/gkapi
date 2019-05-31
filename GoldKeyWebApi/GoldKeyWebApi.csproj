@@ -240,6 +240,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\Consume\ConsumeMgrController.cs" />
     <Compile Include="Controllers\Cruises\CruisesMgrController.cs" />
+    <Compile Include="Controllers\Echarts\EChartsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\Report\CruisesDateController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />

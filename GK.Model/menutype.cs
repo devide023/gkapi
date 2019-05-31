@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace GK.Model
 {
+    /// <summary>
+    /// 消费大类
+    /// </summary>
     public class menutype
     {
         public string typeno{get;set;}

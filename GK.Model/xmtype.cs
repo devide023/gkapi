@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace GK.Model
 {
+    /// <summary>
+    /// 消费项目关联邮船
+    /// </summary>
     public class xmtype
     {
         public string menuno{get;set;} 
