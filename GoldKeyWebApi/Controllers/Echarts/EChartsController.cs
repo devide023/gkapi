@@ -86,7 +86,21 @@ namespace GoldKeyWebApi.Controllers.Echarts
             {
                 CruisesReport rep = new CruisesReport();
                 var list = rep.Cruises_Rc_Class(ksrq, jsrq);
-                return Json(new { code = 1, msg = "ok", list = list });
+                var cruiseslist = list.Select(t => new { cruisesno = t.cruisesno, cruisesname = t.cruisesname}).Distinct();
+                var placelist = list.Select(t => new { placeno = t.placeno, placename = t.placename }).Distinct();
+                List<dynamic> jelist = new List<dynamic>();
+                foreach (var sitem in placelist)
+                {
+                    var datalist = new List<decimal>();
+                    var tempdata = new { name = sitem.placename, type = "bar", label="labelOption", data= datalist };
+                    foreach (var item in cruiseslist)
+                    {
+                       var je = list.Where(t => t.cruisesno == item.cruisesno && t.placeno == sitem.placeno).Sum(t => (decimal)t.je);
+                        datalist.Add(je);
+                    }
+                    jelist.Add(tempdata);
+                }
+                return Json(new { code = 1, msg = "ok", list = list, cruiseslist= cruiseslist, placelist= placelist, jelist= jelist });
             }
             catch (Exception e)
             {
