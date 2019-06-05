@@ -78,14 +78,14 @@ namespace GoldKeyWebApi.Controllers.Echarts
                 return Json(new { code = 0, msg = e.Message });
             }
         }
-        [Route("cruisesdic")]
+        [Route("cruisesdic/{cruisesno?}")]
         [HttpGet]
-        public IHttpActionResult Echart_Cruises_Class(string ksrq,string jsrq)
+        public IHttpActionResult Echart_Cruises_Class(string ksrq,string jsrq,string cruisesno="")
         {
             try
             {
                 CruisesReport rep = new CruisesReport();
-                var list = rep.Cruises_Rc_Class(ksrq, jsrq);
+                var list = rep.Cruises_Rc_Class(ksrq, jsrq,cruisesno).OrderByDescending(t=>t.je);
                 var cruiseslist = list.Select(t => new { cruisesno = t.cruisesno, cruisesname = t.cruisesname}).Distinct();
                 var placelist = list.Select(t => new { placeno = t.placeno, placename = t.placename }).Distinct();
                 List<dynamic> jelist = new List<dynamic>();

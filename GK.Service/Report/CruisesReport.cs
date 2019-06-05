@@ -93,7 +93,7 @@ namespace GK.Service.Report
         /// <param name="ksrq"></param>
         /// <param name="jsrq"></param>
         /// <returns></returns>
-        public IEnumerable<dynamic> Cruises_Rc_Class(string ksrq, string jsrq)
+        public IEnumerable<dynamic> Cruises_Rc_Class(string ksrq, string jsrq,string cruisesno="")
         {
             StringBuilder sql = new StringBuilder();
             sql.Append("SELECT t1.cruisesno, \n");
@@ -122,8 +122,13 @@ namespace GK.Service.Report
             sql.Append("                FROM   dbo.MENUBILLH \n");
             sql.Append("                WHERE  NOTENO = ta.noteno)           AS rcno \n");
             sql.Append("        FROM   dbo.MENUBILLM ta \n");
-            sql.AppendFormat("        WHERE  CONVERT(DATE, ta.DATE0) BETWEEN '{0}' AND '{1}') t1 \n",ksrq,jsrq);
-            sql.Append("GROUP  BY t1.cruisesno, \n");
+            sql.AppendFormat("        WHERE  CONVERT(DATE, ta.DATE0) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
+            if (!string.IsNullOrEmpty(cruisesno))
+            {
+                sql.AppendFormat(" and ta.cruisesno = '{0}' \n", cruisesno);
+            }
+            sql.Append(" ) t1 \n");
+            sql.Append(" GROUP  BY t1.cruisesno, \n");
             sql.Append("          t1.cruisesname, \n");
             sql.Append("          t1.typeno, \n");
             sql.Append("          t1.typename, \n");
@@ -134,6 +139,102 @@ namespace GK.Service.Report
             sql.Append("          t1.rcno, \n");
             sql.Append("          t1.PLACENO, \n");
             sql.Append("          t1.TYPENO");
+            using (GoldKey_DB db = new GoldKey_DB())
+            {
+                return db.Get_Con.Query(sql.ToString());
+            }
+        }
+        /// <summary>
+        /// 消费项目排行
+        /// </summary>
+        /// <param name="ksrq"></param>
+        /// <param name="jsrq"></param>
+        /// <param name="cruisesno"></param>
+        /// <returns></returns>
+        public IEnumerable<dynamic> MenuCodeSaleTop(string ksrq,string jsrq,string cruisesno="")
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT ta.menuno, \n");
+            sql.Append("       ta.menuname, \n");
+            sql.Append("       ta.je \n");
+            sql.Append("FROM   (SELECT MENUNO, \n");
+            sql.Append("               t1.MENUNAME, \n");
+            sql.Append("               Sum(curr) AS je \n");
+            sql.Append("        FROM   dbo.MENUBILLM t1 \n");
+            sql.AppendFormat("        WHERE  CONVERT(DATE, t1.DATE0) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
+            if(!string.IsNullOrEmpty(cruisesno))
+            {
+                sql.AppendFormat(" and t1.cruisesno='{0}' \n", cruisesno);
+            }
+            sql.Append("        GROUP  BY t1.MENUNO, \n");
+            sql.Append("                  t1.MENUNAME) ta \n");
+            sql.Append("ORDER  BY ta.je DESC");
+            using (GoldKey_DB db = new GoldKey_DB())
+            {
+                return db.Get_Con.Query(sql.ToString());
+            }
+        }
+        /// <summary>
+        /// 航次销售排行
+        /// </summary>
+        /// <param name="ksrq"></param>
+        /// <param name="jsrq"></param>
+        /// <param name="cruisesno"></param>
+        /// <returns></returns>
+        public IEnumerable<dynamic> RcSaleTop(string ksrq,string jsrq,string cruisesno="")
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT t1.rcno, \n");
+            sql.Append("t1.je, \n");
+            sql.Append("convert(nvarchar(10),t2.bdate,120) as bdate, \n");
+            sql.Append("convert(nvarchar(10),t2.edate,120) as edate, \n");
+            sql.Append("t2.no, \n");
+            sql.Append("t2.scgkname, \n");
+            sql.Append("t2.lcgkname, \n");
+            sql.Append("(SELECT name FROM dbo.CRUISES WHERE CODE = t2.CRUISESNO) AS name \n");
+            sql.Append(" FROM \n");
+            sql.Append("(SELECT RCNO, \n");
+            sql.Append("       Sum(CURR0) AS je \n");
+            sql.Append("FROM   dbo.MENUBILLH \n");
+            sql.AppendFormat("WHERE  CONVERT(DATE, NOTEDATE) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
+            if(!string.IsNullOrEmpty(cruisesno))
+            {
+                sql.AppendFormat("AND CRUISESNO='{0}' \n",cruisesno);
+            }
+            sql.Append("GROUP  BY rcno \n");
+            sql.Append(") t1,dbo.SHIPCLASS t2 \n");
+            sql.Append("WHERE t1.RCNO = t2.RCNO \n");
+            sql.Append(" \n");
+            sql.Append(" ORDER BY t1.je DESC");
+
+            using (GoldKey_DB db = new GoldKey_DB())
+            {
+                return db.Get_Con.Query(sql.ToString());
+            }
+        }
+        /// <summary>
+        /// 销售站点销售排行
+        /// </summary>
+        /// <param name="ksrq"></param>
+        /// <param name="jsrq"></param>
+        /// <param name="cruisesno"></param>
+        /// <returns></returns>
+        public IEnumerable<dynamic> PlaceSaleTop(string ksrq, string jsrq, string cruisesno = "")
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT t1.*, \n");
+            sql.Append("       (SELECT TOP 1 placename \n");
+            sql.Append("        FROM   dbo.MENUPLACE \n");
+            sql.Append("        WHERE  PLACENO = t1.PLACENO) AS placename \n");
+            sql.Append("FROM   (SELECT placeno, \n");
+            sql.Append("               Sum(CURR0) AS je \n");
+            sql.Append("        FROM   dbo.MENUBILLH \n");
+            sql.AppendFormat("        WHERE  CONVERT(DATE, NOTEDATE) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
+            if(!string.IsNullOrEmpty(cruisesno))
+            {
+                sql.AppendFormat("               AND CRUISESNO = '{0}' \n",cruisesno);
+            }
+            sql.Append("        GROUP  BY placeno) t1 order by t1.je desc");
             using (GoldKey_DB db = new GoldKey_DB())
             {
                 return db.Get_Con.Query(sql.ToString());
