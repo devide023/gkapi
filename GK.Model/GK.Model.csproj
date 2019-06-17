@@ -53,9 +53,15 @@
     <Compile Include="Parms\shipclass_parm.cs" />
     <Compile Include="Parms\xmtype_parm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="public_db\sys_menu.cs" />
+    <Compile Include="public_db\sys_role.cs" />
+    <Compile Include="public_db\sys_role_menu.cs" />
+    <Compile Include="public_db\sys_user.cs" />
+    <Compile Include="public_db\sys_user_role.cs" />
     <Compile Include="shipclass.cs" />
     <Compile Include="xmtype.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

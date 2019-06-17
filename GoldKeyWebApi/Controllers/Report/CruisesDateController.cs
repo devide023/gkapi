@@ -7,7 +7,7 @@ using System.Web.Http;
 using GK.Service.Report;
 using GK.Model;
 using GK.Model.Parms;
-
+using Webdiyer.WebControls.Mvc;
 namespace GoldKeyWebApi.Controllers.Report
 {
     [RoutePrefix("api/report")]
@@ -103,6 +103,21 @@ namespace GoldKeyWebApi.Controllers.Report
                 CruisesReport rep = new CruisesReport();
                 var list = rep.PlaceSaleTop(ksrq, jsrq, cruisesno);
                 return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("rcdetail")]
+        [HttpGet]
+        public IHttpActionResult Cruises_RcSaleDetail(string rcno,int pageindex,int pagesize)
+        {
+            try
+            {
+                CruisesReport rep = new CruisesReport();
+                var list = rep.Cruises_RcSale_Detail(rcno).OrderBy(t=>t.placeno).ToPagedList(pageindex,pagesize);
+                return Json(new { code = 1, msg = "ok", list = list,resultcount=list.TotalItemCount });
             }
             catch (Exception e)
             {

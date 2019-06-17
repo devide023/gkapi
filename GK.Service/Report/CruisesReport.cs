@@ -75,17 +75,51 @@ namespace GK.Service.Report
         public IEnumerable<dynamic> CruisesRc(string ksrq, string jsrq,string cruisesno)
         {
             StringBuilder sql = new StringBuilder();
-            sql.Append("SELECT cruisesno,rcno,SUM(TCURR0) AS curr FROM dbo.MENUBILLH \n");
-            sql.AppendFormat("WHERE CONVERT(DATE,NOTEDATE) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
+            sql.Append("SELECT cruisesno,rcno,(SELECT COUNT(GUESTID) AS cnt FROM dbo.GUEST WHERE RCNO=ta.rcno) as guestcnt,SUM(TCURR0) AS curr FROM dbo.MENUBILLH ta \n");
+            sql.AppendFormat("WHERE CONVERT(DATE,ta.NOTEDATE) BETWEEN '{0}' AND '{1}' \n",ksrq,jsrq);
             if(!string.IsNullOrEmpty(cruisesno))
             { 
-                sql.AppendFormat(" and cruisesno='{0}' ", cruisesno);
+                sql.AppendFormat(" and ta.cruisesno='{0}' ", cruisesno);
             }
             sql.Append("GROUP BY CRUISESNO,RCNO");
             using (GoldKey_DB db = new GoldKey_DB())
             {
                 return db.Get_Con.Query(sql.ToString());
             }
+        }
+        /// <summary>
+        /// 航次销售统计
+        /// </summary>
+        /// <param name="rcno"></param>
+        /// <returns></returns>
+        public IEnumerable<dynamic> Cruises_RcSale_Detail(string rcno)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT ta.placename,ta.placeno,ta.typeno, \n");
+            sql.Append("       ta.menuname, \n");
+            sql.Append("       (SELECT TYPENAME \n");
+            sql.Append("        FROM   dbo.MENUTYPE \n");
+            sql.Append("        WHERE  TYPENO = ta.TYPENO) AS typename, \n");
+            sql.Append("       ta.price, \n");
+            sql.Append("       ta.amount, \n");
+            sql.Append("       ta.curr, \n");
+            sql.Append("       tc.name, \n");
+            sql.Append("       tc.surname, \n");
+            sql.Append("       tc.enname, \n");
+            sql.Append("       tc.address, \n");
+            sql.Append("       tc.sex, \n");
+            sql.Append("       tc.birthdate \n");
+            sql.Append("FROM   dbo.MENUBILLM ta, \n");
+            sql.Append("       dbo.MENUBILLH tb, \n");
+            sql.Append("       dbo.GUEST tc \n");
+            sql.Append("WHERE  ta.NOTENO = tb.NOTENO \n");
+            sql.Append("       AND ta.GUESTID = tc.GUESTID \n");
+            sql.AppendFormat("       AND tb.RCNO = '{0}' order by ta.placeno asc,ta.typeno asc",rcno);
+            using (GoldKey_DB db = new GoldKey_DB())
+            {
+                return db.Get_Con.Query(sql.ToString());
+            }
+
         }
         /// <summary>
         /// 邮轮航次，分类消费

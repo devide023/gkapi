@@ -20,21 +20,11 @@ namespace GoldKeyWebApi.Controllers.Echarts
             {
                 CruisesReport rep = new CruisesReport();
                 var list = rep.CruisesRc(ksrq, jsrq, cruisesno).ToList().OrderBy(t=>t.rcno);
-                var cruises_list = list.Select(t => new { rcno = t.rcno, je = t.curr }).ToList();
-                string no = list.FirstOrDefault().rcno;
                 return Json(new
                 {
                     code = 1,
                     msg = "ok",
-                    option = new
-                    {
-                        title = new { text = "黄金"+no.Substring(1,1)+"号各航次销售" },
-                        tooltip = new { },
-                        legend = new { data = new string[] { "销售额" } },
-                        xAxis = new { data = cruises_list.Select(t => t.rcno) },
-                        yAxis = new { },
-                        series = new { name = "销售额", type = "bar", data = cruises_list.Select(t => t.je) }
-                    }
+                    list = list
                 });
             }
             catch (Exception e)
