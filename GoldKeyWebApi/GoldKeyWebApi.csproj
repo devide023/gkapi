@@ -249,6 +249,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MenuManager\MenuMgrController.cs" />
     <Compile Include="Controllers\Report\CruisesDateController.cs" />
+    <Compile Include="Controllers\UserManager\UserMgrController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

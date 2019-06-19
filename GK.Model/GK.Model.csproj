@@ -51,6 +51,7 @@
     <Compile Include="Parms\consume_parm.cs" />
     <Compile Include="Parms\menuplace_parm.cs" />
     <Compile Include="Parms\shipclass_parm.cs" />
+    <Compile Include="Parms\User\userparm.cs" />
     <Compile Include="Parms\xmtype_parm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="public_db\sys_menu.cs" />
