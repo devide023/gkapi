@@ -51,7 +51,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
         }
         [Route("list")]
         [HttpGet]
-        public IHttpActionResult UserList(userparm parm)
+        public IHttpActionResult UserList([FromUri]userparm parm)
         {
             int cnt = 0;
             try

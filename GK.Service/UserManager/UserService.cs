@@ -20,6 +20,8 @@ namespace GK.Service.UserManager
                 StringBuilder sql = new StringBuilder();
                 sql.Append("INSERT INTO dbo.sys_user \n");
                 sql.Append("        ( status , \n");
+                sql.Append("          code , \n");
+                sql.Append("          sex , \n");
                 sql.Append("          username , \n");
                 sql.Append("          userpwd , \n");
                 sql.Append("          company_id , \n");
@@ -27,10 +29,15 @@ namespace GK.Service.UserManager
                 sql.Append("          login_way , \n");
                 sql.Append("          login_date , \n");
                 sql.Append("          logout_date , \n");
-                sql.Append("          add_time , \n");
-                sql.Append("          modify_date \n");
+                sql.Append("          address , \n");
+                sql.Append("          tel , \n");
+                sql.Append("          birthday , \n");
+                sql.Append("          modify_date, \n");
+                sql.Append("          add_time \n");
                 sql.Append("        ) \n");
                 sql.Append("VALUES  ( @status , -- status - int \n");
+                sql.Append("          @code , -- code - nvarchar(50) \n");
+                sql.Append("          @sex , -- sex - nvarchar(50) \n");
                 sql.Append("          @username , -- username - nvarchar(50) \n");
                 sql.Append("          @userpwd , -- userpwd - nvarchar(50) \n");
                 sql.Append("          @company_id , -- company_id - int \n");
@@ -38,14 +45,19 @@ namespace GK.Service.UserManager
                 sql.Append("          @login_way , -- login_way - int \n");
                 sql.Append("          @login_date , -- login_date - datetime \n");
                 sql.Append("          @logout_date , -- logout_date - datetime \n");
-                sql.Append("          GETDATE() , -- add_time - datetime \n");
-                sql.Append("          @modify_date  -- modify_date - datetime \n");
+                sql.Append("          @address , -- add_time - datetime \n");
+                sql.Append("          @tel , -- add_time - datetime \n");
+                sql.Append("          @birthday , -- add_time - datetime \n");
+                sql.Append("          @modify_date,  -- modify_date - datetime \n");
+                sql.Append("          GETDATE() -- add_time - datetime \n");
                 sql.Append("        )");
 
                 return db.Current_Conn.Execute(sql.ToString(),
                     new
                     {
                         status = entry.status,
+                        code=entry.code,
+                        sex=entry.sex,
                         username = entry.username,
                         userpwd = entry.userpwd,
                         company_id = entry.company_id,
@@ -53,6 +65,9 @@ namespace GK.Service.UserManager
                         login_way = entry.login_way,
                         login_date = entry.login_date,
                         logout_date = entry.logout_date,
+                        address=entry.address,
+                        tel=entry.tel,
+                        birthday=entry.birthday,
                         modify_date = entry.modify_date
                     });
             }

@@ -11,7 +11,11 @@ namespace GK.Model.public_db
         public int id { get; set; }
         public int status { get; set; }
         public string username { get; set; }
+        public string code { get; set; }
+        public int sex { get; set; }
         public string userpwd { get; set; }
+        public string address { get; set; }
+        public string tel { get; set; }
         public int company_id { get; set; }
         public int department_id { get; set; }
         public int login_way { get; set; }
@@ -19,5 +23,6 @@ namespace GK.Model.public_db
         public DateTime? logout_date { get; set; }
         public DateTime? add_time { get; set; }
         public DateTime? modify_date { get; set; }
+        public DateTime? birthday { get; set; }
     }
 }
