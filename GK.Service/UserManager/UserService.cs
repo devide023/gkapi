@@ -9,6 +9,7 @@ using GK.Model.public_db;
 using GK.DAO;
 using Dapper;
 using Webdiyer.WebControls.Mvc;
+using GK.Utils;
 namespace GK.Service.UserManager
 {
     public class UserService : IService<sys_user>
@@ -20,10 +21,11 @@ namespace GK.Service.UserManager
                 StringBuilder sql = new StringBuilder();
                 sql.Append("INSERT INTO dbo.sys_user \n");
                 sql.Append("        ( status , \n");
-                sql.Append("          code , \n");
+                sql.Append("          usercode , \n");
                 sql.Append("          sex , \n");
                 sql.Append("          username , \n");
                 sql.Append("          userpwd , \n");
+                sql.Append("          rkey , \n");
                 sql.Append("          company_id , \n");
                 sql.Append("          department_id , \n");
                 sql.Append("          login_way , \n");
@@ -40,6 +42,7 @@ namespace GK.Service.UserManager
                 sql.Append("          @sex , -- sex - nvarchar(50) \n");
                 sql.Append("          @username , -- username - nvarchar(50) \n");
                 sql.Append("          @userpwd , -- userpwd - nvarchar(50) \n");
+                sql.Append("          @rkey , -- rkey - nvarchar(50) \n");
                 sql.Append("          @company_id , -- company_id - int \n");
                 sql.Append("          @department_id , -- department_id - int \n");
                 sql.Append("          @login_way , -- login_way - int \n");
@@ -56,10 +59,11 @@ namespace GK.Service.UserManager
                     new
                     {
                         status = entry.status,
-                        code=entry.code,
+                        code=entry.usercode,
                         sex=entry.sex,
                         username = entry.username,
                         userpwd = entry.userpwd,
+                        rkey=entry.rkey,
                         company_id = entry.company_id,
                         department_id = entry.department_id,
                         login_way = entry.login_way,
@@ -178,6 +182,26 @@ namespace GK.Service.UserManager
                 var list = db.Current_Conn.Query<sys_user>(sql.ToString(), q).OrderByDescending(t => t.id).ToPagedList(parm.pageindex, parm.pagesize);
                 recordcount = list.TotalItemCount;
                 return list;
+            }
+        }
+
+        public bool Check_UserLogin(string usercode,string userpwd)
+        {
+            Tool tool = new Tool();
+            using (LocalDB db = new LocalDB())
+            {
+                StringBuilder sql = new StringBuilder();
+                sql.Append("select userpwd,rkey from sys_user where usercode = @usercode");
+                sys_user entry = db.Current_Conn.Query<sys_user>(sql.ToString(), new { usercode = usercode }).FirstOrDefault();
+                string pwd = tool.Encryption(userpwd, entry.rkey.ToString());
+                if(pwd == entry.userpwd)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
     }

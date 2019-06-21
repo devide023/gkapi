@@ -8,6 +8,7 @@ using GK.Model.public_db;
 using Webdiyer.WebControls.Mvc;
 using GK.Service.UserManager;
 using GK.Model.Parms;
+using GK.Utils;
 namespace GoldKeyWebApi.Controllers.UserManager
 {
     [RoutePrefix("api/usermgr")]
@@ -19,6 +20,9 @@ namespace GoldKeyWebApi.Controllers.UserManager
         {
             try
             {
+                Tool tool = new Tool();
+                entry.rkey = tool.RandNum();
+                entry.userpwd = tool.Encryption(entry.userpwd,entry.rkey.ToString());
                 UserService us = new UserService();
                 int cnt = us.Add(entry);
                 return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "erroe" });
@@ -63,6 +67,21 @@ namespace GoldKeyWebApi.Controllers.UserManager
             catch (Exception e)
             {
                 return Json(new { code = 0, msg = e.Message, recordcount = cnt });
+            }
+        }
+        [Route("check")]
+        [HttpGet]
+        public IHttpActionResult CheckLogin(string usercode,string userpwd)
+        {
+            try
+            {
+                UserService us = new UserService();
+                bool ret = us.Check_UserLogin(usercode, userpwd);
+                return ret ? Json(new { code = 1, msg = "ok" }) : Json(new { code=1,msg="用户名或密码错误！"});
+            }
+            catch (Exception e)
+            {
+                return Json(new { code=1,msg=e.Message});
             }
         }
     }

@@ -11,7 +11,8 @@ namespace GK.Model.public_db
         public int id { get; set; }
         public int status { get; set; }
         public string username { get; set; }
-        public string code { get; set; }
+        public string usercode { get; set; }
+        public int rkey { get; set; }
         public int sex { get; set; }
         public string userpwd { get; set; }
         public string address { get; set; }
