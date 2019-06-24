@@ -10,5 +10,6 @@ namespace GK.Model.Parms
     {
         public string company_id { get; set; }
         public string department_id { get; set; }
+        public string user_code { get; set; }
     }
 }

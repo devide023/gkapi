@@ -10,6 +10,7 @@ namespace GK.Service
     {
         int Add(T entry);
         int Del(int id);
+        int Del(List<int> ids);
         int Update(T entry);
         T Find(int id);
         IEnumerable<T> List();

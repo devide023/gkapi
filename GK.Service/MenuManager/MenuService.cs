@@ -45,6 +45,16 @@ namespace GK.Service.MenuManager
             }
         }
 
+        public int Del(List<int> ids)
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                StringBuilder sql = new StringBuilder();
+                sql.Append("DELETE FROM dbo.sys_menu WHERE id in @ids");
+                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+            }
+        }
+
         public sys_menu Find(int id)
         {
             using (LocalDB db = new LocalDB())

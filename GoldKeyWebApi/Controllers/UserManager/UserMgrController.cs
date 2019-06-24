@@ -20,12 +20,21 @@ namespace GoldKeyWebApi.Controllers.UserManager
         {
             try
             {
+                int exist = 0;
                 Tool tool = new Tool();
                 entry.rkey = tool.RandNum();
-                entry.userpwd = tool.Encryption(entry.userpwd,entry.rkey.ToString());
+                entry.userpwd = tool.Md5(entry.userpwd);
                 UserService us = new UserService();
-                int cnt = us.Add(entry);
-                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "erroe" });
+                var list = us.List(new userparm { user_code = entry.usercode, pageindex = 1, pagesize = int.MaxValue }, out exist);
+                if (exist == 0)
+                {
+                    int cnt = us.Add(entry);
+                    return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "erroe" });
+                }
+                else
+                {
+                    return Json(new { code = 0, msg = "用户代号重复！" });
+                }
             }
             catch (Exception e)
             {
@@ -54,8 +63,8 @@ namespace GoldKeyWebApi.Controllers.UserManager
             }
         }
         [Route("list")]
-        [HttpGet]
-        public IHttpActionResult UserList([FromUri]userparm parm)
+        [HttpPost]
+        public IHttpActionResult UserList(userparm parm)
         {
             int cnt = 0;
             try
@@ -71,17 +80,54 @@ namespace GoldKeyWebApi.Controllers.UserManager
         }
         [Route("check")]
         [HttpGet]
-        public IHttpActionResult CheckLogin(string usercode,string userpwd)
+        public IHttpActionResult CheckLogin(string usercode, string userpwd)
         {
             try
             {
                 UserService us = new UserService();
-                bool ret = us.Check_UserLogin(usercode, userpwd);
-                return ret ? Json(new { code = 1, msg = "ok" }) : Json(new { code=1,msg="用户名或密码错误！"});
+                sys_user entry = us.Check_UserLogin(usercode, userpwd);
+                return entry.id > 0 ? Json(new { code = 1, msg = "ok", user = entry }) : Json(new { code = 1, msg = "用户名或密码错误！", user = new sys_user() });
             }
             catch (Exception e)
             {
-                return Json(new { code=1,msg=e.Message});
+                return Json(new { code = 1, msg = e.Message });
+            }
+        }
+
+        [Route("del")]
+        [HttpPost]
+        public IHttpActionResult RemoveUsers(int[] ids)
+        {
+            try
+            {
+                UserService us = new UserService();
+                int cnt = us.Del(ids.ToList());
+                return cnt > 0 ? Json(new { code=1,msg="ok"}):Json(new { code=0,msg="error"});
+            }
+            catch (Exception e)
+            {
+                return Json(new { code=0,msg=e.Message});
+            }
+        }
+        [Route("disabel")]
+        [HttpPost]
+        public IHttpActionResult DisabelUsers(dynamic obj)
+        {
+            try
+            {
+                UserService us = new UserService();
+                List<int> ids = new List<int>();
+                foreach (var item in obj.ids)
+                {
+                    ids.Add((int)item);
+                }
+                int cnt = us.Disabel_User(ids,(int)obj.status);
+                return cnt > 0 ? Json(new { code = 1, msg = "数据操作成功" }) : Json(new { code = 0, msg = "数据操作失败" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+                throw;
             }
         }
     }

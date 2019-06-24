@@ -87,6 +87,29 @@ namespace GK.Service.UserManager
             }
         }
 
+        public int Del(List<int> ids)
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                StringBuilder sql = new StringBuilder();
+                sql.AppendFormat("delete from sys_user where id in @ids");
+                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+            }
+        }
+        public int Disabel_User(List<int> ids,int status)
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                StringBuilder sql = new StringBuilder();
+                sql.AppendFormat("update sys_user set status=@status where id = @id");
+                List<dynamic> list = new List<dynamic>();
+                foreach (var item in ids)
+                {
+                    list.Add(new { status = status, id = item });
+                }
+                return db.Current_Conn.Execute(sql.ToString(), list);
+            }
+        }
         public sys_user Find(int id)
         {
             using (LocalDB db = new LocalDB())
@@ -171,13 +194,18 @@ namespace GK.Service.UserManager
                 DynamicParameters q = new DynamicParameters();
                 if (!string.IsNullOrEmpty(parm.key))
                 {
-                    sql.AppendFormat(" and username=@username ");
-                    q.Add("username", parm.key);
+                    sql.AppendFormat(" and username like @username ");
+                    q.Add("username", "%"+parm.key+"%");
                 }
                 if (!string.IsNullOrEmpty(parm.company_id))
                 {
                     sql.AppendFormat(" and company_id=@company_id ");
                     q.Add("company_id", parm.company_id);
+                }
+                if (!string.IsNullOrEmpty(parm.user_code))
+                {
+                    sql.AppendFormat(" and usercode=@usercode ");
+                    q.Add("usercode", parm.user_code);
                 }
                 var list = db.Current_Conn.Query<sys_user>(sql.ToString(), q).OrderByDescending(t => t.id).ToPagedList(parm.pageindex, parm.pagesize);
                 recordcount = list.TotalItemCount;
@@ -185,22 +213,22 @@ namespace GK.Service.UserManager
             }
         }
 
-        public bool Check_UserLogin(string usercode,string userpwd)
+        public sys_user Check_UserLogin(string usercode,string userpwd)
         {
             Tool tool = new Tool();
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();
-                sql.Append("select userpwd,rkey from sys_user where usercode = @usercode");
+                sql.Append("select * from sys_user where usercode = @usercode");
                 sys_user entry = db.Current_Conn.Query<sys_user>(sql.ToString(), new { usercode = usercode }).FirstOrDefault();
-                string pwd = tool.Encryption(userpwd, entry.rkey.ToString());
+                string pwd = tool.Md5(userpwd);
                 if(pwd == entry.userpwd)
                 {
-                    return true;
+                    return entry;
                 }
                 else
                 {
-                    return false;
+                    return new sys_user();
                 }
             }
         }
