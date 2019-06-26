@@ -50,6 +50,7 @@
     <Compile Include="Parms\baseparm.cs" />
     <Compile Include="Parms\consume_parm.cs" />
     <Compile Include="Parms\menuplace_parm.cs" />
+    <Compile Include="Parms\Menu\menuparm.cs" />
     <Compile Include="Parms\shipclass_parm.cs" />
     <Compile Include="Parms\User\userparm.cs" />
     <Compile Include="Parms\xmtype_parm.cs" />

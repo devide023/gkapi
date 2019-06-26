@@ -7,6 +7,7 @@ using System.Web.Http;
 using GK.Service.MenuManager;
 using GK.Model.public_db;
 using Webdiyer.WebControls.Mvc;
+using GK.Model.Parms.Menu;
 
 namespace GoldKeyWebApi.Controllers.MenuManager
 {
@@ -59,7 +60,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             }
         }
 
-        [Route("find/{id:int}")]
+        [Route("find")]
         [HttpGet]
         public IHttpActionResult Find_Menu(int id)
         {
@@ -67,6 +68,53 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             {
                 MenuService svc = new MenuService();
                 sys_menu entry = svc.Find(id);
+                return Json(new { code = 1, msg = "ok", entry = entry });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("list")]
+        [HttpPost]
+        public IHttpActionResult MenuList(menuparm parm)
+        {
+            try
+            {
+                int recordcount = 0;
+                MenuService ms = new MenuService();
+                var list = ms.List(parm, out recordcount);
+                return Json(new { code = 1, msg = "ok",list=list, recordcount = recordcount });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+
+        [Route("rootlist")]
+        [HttpGet]
+        public IHttpActionResult RootList(int pid=0)
+        {
+            try
+            {
+                MenuService ms = new MenuService();
+                var list = ms.List(pid);
+                return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("upitem")]
+        [HttpGet]
+        public IHttpActionResult GetUpItem(int id)
+        {
+            try
+            {
+                MenuService ms = new MenuService();
+                sys_menu entry = ms.UpItem(id);
                 return Json(new { code = 1, msg = "ok", entry = entry });
             }
             catch (Exception e)
