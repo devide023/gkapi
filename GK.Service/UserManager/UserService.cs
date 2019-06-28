@@ -232,5 +232,14 @@ namespace GK.Service.UserManager
                 }
             }
         }
+        public int Logout(int userid)
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                StringBuilder sql = new StringBuilder();
+                sql.Append("update sys_user set logout_date=getdate() where id = @id");
+                return db.Current_Conn.Execute(sql.ToString(), new { id = userid });
+            }
+        }
     }
 }

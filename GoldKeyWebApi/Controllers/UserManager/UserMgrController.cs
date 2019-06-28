@@ -133,7 +133,34 @@ namespace GoldKeyWebApi.Controllers.UserManager
             catch (Exception e)
             {
                 return Json(new { code = 0, msg = e.Message });
-                throw;
+            }
+        }
+        [Route("logout")]
+        [HttpGet]
+        public IHttpActionResult Logout(string token)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    Tool tool = new Tool();
+                    string destoken = tool.Decrypt(token, "apitoken");
+                    var index = destoken.IndexOf("&");
+                    string struid = destoken.Substring(0, index);
+                    int uid = 0;
+                    int.TryParse(struid, out uid);
+                    UserService us = new UserService();
+                    int cnt = us.Logout(uid);
+                    return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code=0,msg="error"});
+                }
+                else
+                {
+                    return Json(new { code = 0, msg = "无效的token!" });
+                }
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
             }
         }
     }
