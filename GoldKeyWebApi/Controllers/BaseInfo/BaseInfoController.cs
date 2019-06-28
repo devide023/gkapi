@@ -10,7 +10,7 @@ using GK.Model;
 namespace GoldKeyWebApi.Controllers.BaseInfo
 {
     [RoutePrefix("aip/baseinfo")]
-    public class BaseInfoController : ApiController
+    public class BaseInfoController : BaseApiSecurity
     {
         public BaseInfoController()
         {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
 
-namespace GoldKeyWebApi.ApiSecurity
+namespace GoldKeyWebApi
 {
     [ApiSecurity]
     public class BaseApiSecurity: ApiController

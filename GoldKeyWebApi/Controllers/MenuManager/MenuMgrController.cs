@@ -12,7 +12,7 @@ using GK.Model.Parms.Menu;
 namespace GoldKeyWebApi.Controllers.MenuManager
 {
     [RoutePrefix("api/menumgr")]
-    public class MenuMgrController : ApiController
+    public class MenuMgrController : BaseApiSecurity
     {
         [Route("add")]
         [HttpPost]

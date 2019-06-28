@@ -14,6 +14,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
     [RoutePrefix("api/usermgr")]
     public class UserMgrController : ApiController
     {
+        [ApiSecurity]
         [Route("add")]
         [HttpPost]
         public IHttpActionResult Add_User(sys_user entry)
@@ -41,6 +42,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        [ApiSecurity]
         [Route("userrole")]
         [HttpPost]
         public IHttpActionResult Add_UserRole(dynamic entry)
@@ -62,6 +64,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        [ApiSecurity]
         [Route("list")]
         [HttpPost]
         public IHttpActionResult UserList(userparm parm)
@@ -86,14 +89,16 @@ namespace GoldKeyWebApi.Controllers.UserManager
             {
                 UserService us = new UserService();
                 sys_user entry = us.Check_UserLogin(usercode, userpwd);
-                return entry.id > 0 ? Json(new { code = 1, msg = "ok", user = entry }) : Json(new { code = 1, msg = "用户名或密码错误！", user = new sys_user() });
+                Tool tool = new Tool();
+                string token = tool.Encryption(entry.id.ToString()+"&"+userpwd, "apitoken");
+                return entry.id > 0 ? Json(new { code = 1, msg = "ok", user = entry,token=token }) : Json(new { code = 1, msg = "用户名或密码错误！", user = new sys_user(),token=string.Empty });
             }
             catch (Exception e)
             {
                 return Json(new { code = 1, msg = e.Message });
             }
         }
-
+        [ApiSecurity]
         [Route("del")]
         [HttpPost]
         public IHttpActionResult RemoveUsers(int[] ids)
@@ -109,6 +114,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 return Json(new { code=0,msg=e.Message});
             }
         }
+        [ApiSecurity]
         [Route("disabel")]
         [HttpPost]
         public IHttpActionResult DisabelUsers(dynamic obj)

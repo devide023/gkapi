@@ -11,7 +11,7 @@ using Webdiyer.WebControls.Mvc;
 namespace GoldKeyWebApi.Controllers.Report
 {
     [RoutePrefix("api/report")]
-    public class CruisesDateController : ApiController
+    public class CruisesDateController : BaseApiSecurity
     {
         /// <summary>
         /// 邮船时间统计

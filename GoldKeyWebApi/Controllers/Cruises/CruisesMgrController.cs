@@ -12,7 +12,8 @@ using Dapper;
 namespace GoldKeyWebApi.Controllers.Cruises
 {
     [RoutePrefix("api/cruises")]
-    public class CruisesMgrController : ApiController
+    public class CruisesMgrController : BaseApiSecurity
+
     {
         /// <summary>
         /// 邮轮航次列表

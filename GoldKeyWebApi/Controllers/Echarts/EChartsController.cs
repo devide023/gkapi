@@ -10,7 +10,7 @@ using GK.Service.Report;
 namespace GoldKeyWebApi.Controllers.Echarts
 {
     [RoutePrefix("api/echarts")]
-    public class EChartsController : ApiController
+    public class EChartsController : BaseApiSecurity
     {
         [Route("cruisesrc")]
         [HttpGet]

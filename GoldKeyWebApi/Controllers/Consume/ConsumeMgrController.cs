@@ -11,7 +11,7 @@ using GK.DAO;
 namespace GoldKeyWebApi.Controllers.Consume
 {
     [RoutePrefix("api/consume")]
-    public class ConsumeMgrController : ApiController
+    public class ConsumeMgrController : BaseApiSecurity
     {
         /// <summary>
         /// 消费项目
