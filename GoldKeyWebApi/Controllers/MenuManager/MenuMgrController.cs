@@ -138,7 +138,10 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                 {
                     json.Append("{\"id\":" + item.id + ",\"pid\":" + item.pid + ",\"title\":\"" + item.title + "\",\"subitems\":[" + SubMenu(root, item).ToString() + "]},");
                 }
-                json.Remove(json.Length - 1, 1);
+                if(root.Count(t=>t.pid==0)>0)
+                { 
+                    json.Remove(json.Length - 1, 1);
+                }
                 json.Append("]");
                 return Json(new { code = 1, msg = "ok", data = json.ToString() });
             }
