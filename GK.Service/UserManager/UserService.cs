@@ -144,7 +144,9 @@ namespace GK.Service.UserManager
                 sql.Append("       login_date = @login_date, \n");
                 sql.Append("       logout_date = @logout_date, \n");
                 sql.Append("       modify_date = @modify_date, \n");
-                sql.Append("       add_time = @add_time \n");
+                sql.Append("       birthday = @birthday, \n");
+                sql.Append("       address = @address, \n");
+                sql.Append("       tel = @tel \n");
                 sql.Append("WHERE  id = @id");
                 return db.Current_Conn.Execute(sql.ToString(),
                     new
@@ -157,8 +159,10 @@ namespace GK.Service.UserManager
                         login_way = entry.login_way,
                         login_date = entry.login_date,
                         logout_date = entry.logout_date,
-                        modify_date = entry.modify_date,
-                        add_time = entry.add_time
+                        modify_date = DateTime.Now,
+                        birthday=entry.birthday,
+                        address=entry.address,
+                        tel=entry.tel
                     });
             }
         }
@@ -220,7 +224,8 @@ namespace GK.Service.UserManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.Append("select * from sys_user where usercode = @usercode");
-                sys_user entry = db.Current_Conn.Query<sys_user>(sql.ToString(), new { usercode = usercode }).FirstOrDefault();
+                var list = db.Current_Conn.Query<sys_user>(sql.ToString(), new { usercode = usercode });
+                sys_user entry = list.Count()>0?list.FirstOrDefault():new sys_user();
                 string pwd = tool.Md5(userpwd);
                 if(pwd == entry.userpwd)
                 {
@@ -239,6 +244,73 @@ namespace GK.Service.UserManager
                 StringBuilder sql = new StringBuilder();
                 sql.Append("update sys_user set logout_date=getdate() where id = @id");
                 return db.Current_Conn.Execute(sql.ToString(), new { id = userid });
+            }
+        }
+
+        public IEnumerable<sys_role> GetRoleByUid(List<int> uids)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT DISTINCT tb.* \n");
+            sql.Append("FROM   dbo.sys_user_role ta, \n");
+            sql.Append("       dbo.sys_role tb \n");
+            sql.Append("WHERE  ta.role_id = tb.id \n");
+            sql.Append("       AND ta.USER_ID IN @uids ");
+
+            using (LocalDB db = new LocalDB())
+            {
+                return db.Current_Conn.Query<sys_role>(sql.ToString(), new { uids = uids });
+            }
+        }
+
+        public int SaveUserRole(int uid,List<int> roleids)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("DELETE FROM dbo.sys_user_role WHERE user_id=@uid");
+
+
+            StringBuilder sql1 = new StringBuilder();
+            sql1.Append("INSERT INTO dbo.sys_user_role \n");
+            sql1.Append("        ( user_id, role_id ) \n");
+            sql1.Append("VALUES  ( @uid, -- user_id - int \n");
+            sql1.Append("          @roleid  -- role_id - int \n");
+            sql1.Append("          )");
+            List<dynamic> list = new List<dynamic>();
+            foreach (var item in roleids)
+            {
+                list.Add(new { uid = uid, roleid = Convert.ToInt32(item) });
+            }
+            using (LocalDB db = new LocalDB())
+            {
+                db.Current_Conn.Open();
+                var trans = db.Current_Conn.BeginTransaction();
+                try
+                {
+                    db.Current_Conn.Execute(sql.ToString(), new { uid = uid }, trans);
+                    int cnt = db.Current_Conn.Execute(sql1.ToString(), list, trans);
+                    trans.Commit();
+                    return cnt;
+                }
+                catch (Exception)
+                {
+                    trans.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public IEnumerable<sys_menu> GetUserMenus(int userid)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT DISTINCT tc.* \n");
+            sql.Append("FROM   dbo.sys_user_role ta, \n");
+            sql.Append("       dbo.sys_role_menu tb, \n");
+            sql.Append("       dbo.sys_menu tc \n");
+            sql.Append("WHERE  ta.role_id = tb.role_id \n");
+            sql.Append("       AND tb.menu_id = tc.id \n");
+            sql.Append("       AND ta.user_id = @userid");
+            using (LocalDB db = new LocalDB())
+            {
+               return db.Current_Conn.Query<sys_menu>(sql.ToString(), new { userid = userid });
             }
         }
     }

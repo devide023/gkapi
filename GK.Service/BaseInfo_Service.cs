@@ -7,6 +7,7 @@ using GK.Model;
 using GK.DAO;
 using Webdiyer.WebControls.Mvc;
 using Dapper;
+using GK.Model.public_db;
 namespace GK.Service
 {
     public class BaseInfo_Service
@@ -21,6 +22,14 @@ namespace GK.Service
             using (GoldKey_DB db = new GoldKey_DB())
             {
                 return db.Get_Con.Query<cruises>("select * from cruises order by code");
+            }
+        }
+
+        public IEnumerable<sys_menutype> Get_MenuType()
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                return db.Current_Conn.Query<sys_menutype>("select * from sys_menutype where status=1 order by id asc");
             }
         }
 

@@ -14,6 +14,8 @@ namespace GK.Model.public_db
         public string title { get; set; }
         public string code { get; set; }
         public string icon { get; set; }
+        public int menutype { get; set; }
+        public int seq { get; set; }
         public string path { get; set; }
         public DateTime add_time { get; set; }
     }

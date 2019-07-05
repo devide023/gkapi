@@ -11,5 +11,6 @@ namespace GK.Model.Parms.Menu
         public string code { get; set; }
         public string name { get; set; }
         public int pid { get; set; }
+        public int menutype { get; set; }
     }
 }

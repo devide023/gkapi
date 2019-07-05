@@ -91,11 +91,11 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 sys_user entry = us.Check_UserLogin(usercode, userpwd);
                 Tool tool = new Tool();
                 string token = tool.Encryption(entry.id.ToString()+"&"+userpwd, "apitoken");
-                return entry.id > 0 ? Json(new { code = 1, msg = "ok", user = entry,token=token }) : Json(new { code = 1, msg = "用户名或密码错误！", user = new sys_user(),token=string.Empty });
+                return entry.id > 0 ? Json(new { code = 1, msg = "ok", user = entry,token=token }) : Json(new { code = 0, msg = "用户名或密码错误！", user = new sys_user(),token=string.Empty });
             }
             catch (Exception e)
             {
-                return Json(new { code = 1, msg = e.Message });
+                return Json(new { code = 0, msg = e.Message });
             }
         }
         [ApiSecurity]
@@ -157,6 +157,77 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 {
                     return Json(new { code = 0, msg = "无效的token!" });
                 }
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [ApiSecurity]
+        [Route("edit")]
+        [HttpPost]
+        public IHttpActionResult ModifyUser(sys_user entry)
+        {
+            try
+            {
+                UserService us = new UserService();
+                int cnt = us.Update(entry);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [ApiSecurity]
+        [Route("rolebyuids")]
+        [HttpPost]
+        public IHttpActionResult GetRoleByUids(List<int> uids)
+        {
+            try
+            {
+                UserService us = new UserService();
+                var list = us.GetRoleByUid(uids);
+                return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+
+        [ApiSecurity]
+        [Route("saveuserroles")]
+        [HttpPost]
+        public IHttpActionResult SaveUserRoles(dynamic data)
+        {
+            try
+            {
+                int uid = Convert.ToInt32(data.userid);
+                List<int> roleids = new List<int>();
+                foreach (var item in data.roleids)
+                {
+                    roleids.Add(Convert.ToInt32(item));
+                }
+                UserService us = new UserService();
+                int cnt = us.SaveUserRole(uid, roleids);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [ApiSecurity]
+        [Route("usermenus")]
+        [HttpGet]
+        public IHttpActionResult GetMenusByUid(int uid)
+        {
+            try
+            {
+                UserService us = new UserService();
+                var list = us.GetUserMenus(uid);
+                return Json(new { code = 1, msg = "ok", list = list });
             }
             catch (Exception e)
             {

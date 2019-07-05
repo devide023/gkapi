@@ -8,6 +8,8 @@ using GK.Service.MenuManager;
 using GK.Model.public_db;
 using Webdiyer.WebControls.Mvc;
 using GK.Model.Parms.Menu;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace GoldKeyWebApi.Controllers.MenuManager
 {
@@ -22,7 +24,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             {
                 MenuService svc = new MenuService();
                 int cnt = svc.Add(entry);
-                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "编码重复！" });
             }
             catch (Exception e)
             {
@@ -121,6 +123,43 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             {
                 return Json(new { code = 0, msg = e.Message });
             }
+        }
+        [Route("menutree")]
+        [HttpGet]
+        public IHttpActionResult MenuTree()
+        {
+            try
+            {
+                MenuService ms = new MenuService();
+                StringBuilder json = new StringBuilder();
+                IEnumerable<sys_menu> root = ms.MenuTree(0);
+                json.Append("[");
+                foreach (var item in root.Where(t=>t.pid==0))
+                {
+                    json.Append("{\"id\":" + item.id + ",\"pid\":" + item.pid + ",\"title\":\"" + item.title + "\",\"subitems\":[" + SubMenu(root, item).ToString() + "]},");
+                }
+                json.Remove(json.Length - 1, 1);
+                json.Append("]");
+                return Json(new { code = 1, msg = "ok", data = json.ToString() });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+
+        private StringBuilder SubMenu(IEnumerable<sys_menu> list,sys_menu item)
+        {
+            StringBuilder json = new StringBuilder();
+            if(list.Count(t=>t.pid==item.id)>0)
+            {
+                foreach (var sitem in list.Where(t=>t.pid==item.id))
+                {
+                    json.Append("{\"id\":" + sitem.id + ",\"pid\":" + sitem.pid + ",\"title\":\"" + sitem.title + "\",\"subitems\":[" + SubMenu(list, sitem).ToString() + "]},");
+                }
+                json.Remove(json.Length - 1, 1);
+            }
+            return json;
         }
     }
 }

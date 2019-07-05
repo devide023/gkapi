@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.IO;
 namespace GK.Utils
 {
     public class Tool
@@ -95,6 +95,30 @@ namespace GK.Utils
             rngCrypto.GetBytes(randomBytes);
             int rngNum = BitConverter.ToInt32(randomBytes, 0);
             return Math.Abs(rngNum);
+        }
+
+        public List<string> IconList()
+        {
+            try
+            {
+                List<string> icons = new List<string>();
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                string filepath = path + "icon\\icons.txt";
+                StreamReader sr = new StreamReader(filepath, Encoding.Default);
+                String line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    icons.Add(line.ToString());
+                }
+                sr.Close();
+                sr.Dispose();
+                return icons;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
