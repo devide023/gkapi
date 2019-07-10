@@ -51,6 +51,7 @@
     <Compile Include="Parms\consume_parm.cs" />
     <Compile Include="Parms\menuplace_parm.cs" />
     <Compile Include="Parms\Menu\menuparm.cs" />
+    <Compile Include="Parms\Organize\organizeparm.cs" />
     <Compile Include="Parms\Role\roleparm.cs" />
     <Compile Include="Parms\shipclass_parm.cs" />
     <Compile Include="Parms\User\userparm.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="public_db\sys_menu.cs" />
     <Compile Include="public_db\sys_menutype.cs" />
+    <Compile Include="public_db\sys_organize.cs" />
     <Compile Include="public_db\sys_role.cs" />
     <Compile Include="public_db\sys_role_menu.cs" />
     <Compile Include="public_db\sys_user.cs" />

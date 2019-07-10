@@ -25,5 +25,6 @@ namespace GK.Model.public_db
         public DateTime? add_time { get; set; }
         public DateTime? modify_date { get; set; }
         public DateTime? birthday { get; set; }
+        public string headimg { get; set; }
     }
 }

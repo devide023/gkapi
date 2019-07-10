@@ -221,18 +221,92 @@ namespace GoldKeyWebApi.Controllers.UserManager
         [ApiSecurity]
         [Route("usermenus")]
         [HttpGet]
-        public IHttpActionResult GetMenusByUid(int uid)
+        public IHttpActionResult GetMenusByUid(string token)
         {
             try
             {
-                UserService us = new UserService();
-                var list = us.GetUserMenus(uid);
-                return Json(new { code = 1, msg = "ok", list = list });
+                Tool tool = new Tool();
+                string strTicket = tool.Decrypt(token, "apitoken");
+                var index = strTicket.IndexOf("&");
+                string struid = strTicket.Substring(0, index);
+                int uid = 0;
+                int.TryParse(struid, out uid);
+                if (uid > 0)
+                {
+                    UserService us = new UserService();
+                    var list = us.GetUserMenus(uid);
+                    return Json(new { code = 1, msg = "ok", list = list });
+                }
+                else
+                {
+                    return Json(new { code = 0, msg = "error"});
+                }
             }
             catch (Exception e)
             {
                 return Json(new { code = 0, msg = e.Message });
             }
+        }
+        
+        [Route("info")]
+        [HttpGet]
+        public IHttpActionResult GetUserInfo(string token)
+        {
+            try
+            {
+                Tool tool = new Tool();
+                string strTicket = tool.Decrypt(token, "apitoken");
+                var index = strTicket.IndexOf("&");
+                string struid = strTicket.Substring(0, index);
+                int uid = 0;
+                int.TryParse(struid, out uid);
+                if (uid > 0)
+                {
+                    UserService us = new UserService();
+                    sys_user u = us.Find(uid);
+                    IEnumerable<sys_menu> m = us.GetUserMenus(uid);
+                    List<dynamic> menulist = new List<dynamic>();
+                    foreach (var item in m.Where(t=>t.pid==0))
+                    {
+                        if(m.Count(t=>t.pid==item.id)==0)
+                        { 
+                            menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon } });
+                        }
+                        else
+                        {
+                            var subitem = SubMenus(m, item);
+                            menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon }, children=subitem });
+                        }
+                    }
+                    return Json(new { code = 1, msg = "ok", user = u, menulist = menulist });
+                }
+                else
+                {
+                    return Json(new { code = 0, msg = "error" });
+                }
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+
+        private IEnumerable<dynamic> SubMenus(IEnumerable<sys_menu> list,sys_menu item)
+        {
+            List<dynamic> menulist = new List<dynamic>();
+            foreach (var sitem in list.Where(t=>t.pid==item.id))
+            {
+                if (list.Count(t => t.pid == sitem.id) == 0)
+                {
+                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon } });
+                }
+                else
+                {
+                    var subitem = SubMenus(list, sitem);
+                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon }, children = subitem });
+                }
+            }
+            return menulist;
         }
     }
 }

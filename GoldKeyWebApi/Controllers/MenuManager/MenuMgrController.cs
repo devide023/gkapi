@@ -22,13 +22,50 @@ namespace GoldKeyWebApi.Controllers.MenuManager
         {
             try
             {
+                int items = 0;
                 MenuService svc = new MenuService();
-                int cnt = svc.Add(entry);
-                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "编码重复！" });
+                svc.List(new menuparm { url = entry.path }, out items);
+                if (items == 0)
+                {
+                    int cnt = svc.Add(entry);
+                    return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "编码重复！" });
+                }
+                else
+                {
+                    return Json(new { code = 0, msg = "路径已存在！" });
+                }
             }
             catch (Exception e)
             {
                 return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("batadd")]
+        [HttpPost]
+        public IHttpActionResult BatAdd_Menu(List<sys_menu> entrys)
+        {
+            int items = 0;
+            int okcnt = 0;
+            MenuService svc = new MenuService();
+            foreach (var entry in entrys)
+            {
+                svc.List(new menuparm { url = entry.path }, out items);
+                if (items == 0)
+                {
+                    int cnt = svc.Add(entry);
+                    if (cnt > 0)
+                    {
+                        okcnt++;
+                    }
+                }
+            }
+            if(okcnt == entrys.Count())
+            {
+                return Json(new { code = 1, msg = "数据保存成功！" });
+            }
+            else
+            {
+                return Json(new { code = 0, msg = "数据保存失败！" });
             }
         }
         [Route("update")]
@@ -86,7 +123,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                 int recordcount = 0;
                 MenuService ms = new MenuService();
                 var list = ms.List(parm, out recordcount);
-                return Json(new { code = 1, msg = "ok",list=list, recordcount = recordcount });
+                return Json(new { code = 1, msg = "ok", list = list, recordcount = recordcount });
             }
             catch (Exception e)
             {
@@ -96,7 +133,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
 
         [Route("rootlist")]
         [HttpGet]
-        public IHttpActionResult RootList(int pid=0)
+        public IHttpActionResult RootList(int pid = 0)
         {
             try
             {
@@ -134,12 +171,12 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                 StringBuilder json = new StringBuilder();
                 IEnumerable<sys_menu> root = ms.MenuTree(0);
                 json.Append("[");
-                foreach (var item in root.Where(t=>t.pid==0))
+                foreach (var item in root.Where(t => t.pid == 0))
                 {
                     json.Append("{\"id\":" + item.id + ",\"pid\":" + item.pid + ",\"title\":\"" + item.title + "\",\"subitems\":[" + SubMenu(root, item).ToString() + "]},");
                 }
-                if(root.Count(t=>t.pid==0)>0)
-                { 
+                if (root.Count(t => t.pid == 0) > 0)
+                {
                     json.Remove(json.Length - 1, 1);
                 }
                 json.Append("]");
@@ -151,12 +188,12 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             }
         }
 
-        private StringBuilder SubMenu(IEnumerable<sys_menu> list,sys_menu item)
+        private StringBuilder SubMenu(IEnumerable<sys_menu> list, sys_menu item)
         {
             StringBuilder json = new StringBuilder();
-            if(list.Count(t=>t.pid==item.id)>0)
+            if (list.Count(t => t.pid == item.id) > 0)
             {
-                foreach (var sitem in list.Where(t=>t.pid==item.id))
+                foreach (var sitem in list.Where(t => t.pid == item.id))
                 {
                     json.Append("{\"id\":" + sitem.id + ",\"pid\":" + sitem.pid + ",\"title\":\"" + sitem.title + "\",\"subitems\":[" + SubMenu(list, sitem).ToString() + "]},");
                 }

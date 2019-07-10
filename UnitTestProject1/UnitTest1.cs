@@ -6,6 +6,8 @@ using GK.Model.Parms;
 using GK.Model.public_db;
 using GK.DAO;
 using GK.Service;
+using GoldKeyWebApi.Controllers.UserManager;
+
 namespace UnitTestProject1
 {
     [TestClass]
@@ -14,9 +16,8 @@ namespace UnitTestProject1
         [TestMethod]
         public void TestMethod1()
         {
-            Tool tool = new Tool();
-            string pwd = tool.Md5("123456");
-            Console.WriteLine(pwd);
+            UserMgrController c = new UserMgrController();
+            var j = c.GetUserInfo("0DDJHIaKTsphHL1sWi1mriXJaj74esytgrNbFEkh5CivJQnFg9rfAn+oc2eSDKgkFA6VQnveYKz77bUE7QbOIERMqLPtoPLwPdNoek9sqPq0aOD80bKDzxc4+y8GN4hhK8MWbG08Ygeo3ijKO/GYo+u/qrxW/ZRVAfEhwiRDJ5g=");
         }
     }
 }

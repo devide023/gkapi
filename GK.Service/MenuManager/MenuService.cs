@@ -108,6 +108,11 @@ namespace GK.Service.MenuManager
                     sql.Append(" and menutype=@menutype \n");
                     p.Add("menutype", parm.menutype);
                 }
+                if (!string.IsNullOrEmpty(parm.url))
+                {
+                    sql.Append(" and path=@url \n");
+                    p.Add("url", parm.url);
+                }
                 var list = db.Current_Conn.Query<sys_menu>(sql.ToString(), p).OrderByDescending(t => t.id).ToPagedList(parm.pageindex, parm.pagesize);
                 recordcount = list.TotalItemCount;
                 return list;

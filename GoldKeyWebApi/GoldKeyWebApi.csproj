@@ -251,6 +251,7 @@
     <Compile Include="Controllers\Echarts\EChartsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MenuManager\MenuMgrController.cs" />
+    <Compile Include="Controllers\OrganizeManager\OrganizeController.cs" />
     <Compile Include="Controllers\Report\CruisesDateController.cs" />
     <Compile Include="Controllers\RoleManager\RoleMgrController.cs" />
     <Compile Include="Controllers\UserManager\UserMgrController.cs" />
