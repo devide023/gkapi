@@ -265,20 +265,20 @@ namespace GoldKeyWebApi.Controllers.UserManager
                     UserService us = new UserService();
                     sys_user u = us.Find(uid);
                     IEnumerable<sys_menu> m = us.GetUserMenus(uid);
-                    List<dynamic> menulist = new List<dynamic>();
-                    foreach (var item in m.Where(t=>t.pid==0))
-                    {
-                        if(m.Count(t=>t.pid==item.id)==0)
-                        { 
-                            menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon } });
-                        }
-                        else
-                        {
-                            var subitem = SubMenus(m, item);
-                            menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon }, children=subitem });
-                        }
-                    }
-                    return Json(new { code = 1, msg = "ok", user = u, menulist = menulist });
+                    //List<dynamic> menulist = new List<dynamic>();
+                    //foreach (var item in m.Where(t=>t.pid==0))
+                    //{
+                    //    if(m.Count(t=>t.pid==item.id)==0)
+                    //    { 
+                    //        menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon }, component = item.viewpath });
+                    //    }
+                    //    else
+                    //    {
+                    //        var subitem = SubMenus(m, item);
+                    //        menulist.Add(new { path = item.path, name = item.code, meta = new { title = item.title, icon = item.icon }, children=subitem, component = item.viewpath });
+                    //    }
+                    //}
+                    return Json(new { code = 1, msg = "ok", user = u, menulist = m });
                 }
                 else
                 {
@@ -298,12 +298,12 @@ namespace GoldKeyWebApi.Controllers.UserManager
             {
                 if (list.Count(t => t.pid == sitem.id) == 0)
                 {
-                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon } });
+                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon }, component = sitem.viewpath });
                 }
                 else
                 {
                     var subitem = SubMenus(list, sitem);
-                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon }, children = subitem });
+                    menulist.Add(new { path = sitem.path, name = sitem.code, meta = new { title = sitem.title, icon = sitem.icon }, children = subitem, component = sitem.viewpath });
                 }
             }
             return menulist;

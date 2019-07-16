@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 namespace GoldKeyWebApi.Controllers.MenuManager
 {
     [RoutePrefix("api/menumgr")]
-    public class MenuMgrController : BaseApiSecurity
+    public class MenuMgrController : ApiController
     {
         [Route("add")]
         [HttpPost]
@@ -22,18 +22,10 @@ namespace GoldKeyWebApi.Controllers.MenuManager
         {
             try
             {
-                int items = 0;
+                var route = Request.GetRouteData();
                 MenuService svc = new MenuService();
-                svc.List(new menuparm { url = entry.path }, out items);
-                if (items == 0)
-                {
-                    int cnt = svc.Add(entry);
-                    return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "编码重复！" });
-                }
-                else
-                {
-                    return Json(new { code = 0, msg = "路径已存在！" });
-                }
+                int cnt = svc.Add(entry);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "编码重复！" });
             }
             catch (Exception e)
             {
@@ -59,7 +51,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                     }
                 }
             }
-            if(okcnt == entrys.Count())
+            if (okcnt == entrys.Count())
             {
                 return Json(new { code = 1, msg = "数据保存成功！" });
             }

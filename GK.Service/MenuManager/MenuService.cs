@@ -22,6 +22,7 @@ namespace GK.Service.MenuManager
                 sql.Append("          pid , \n");
                 sql.Append("          title , \n");
                 sql.Append("          code , \n");
+                sql.Append("          menucode , \n");
                 sql.Append("          icon , \n");
                 sql.Append("          path , \n");
                 sql.Append("          menutype , \n");
@@ -32,13 +33,14 @@ namespace GK.Service.MenuManager
                 sql.Append("          @pid , -- pid - int \n");
                 sql.Append("          @title , -- title - nvarchar(100) \n");
                 sql.Append("          @code , -- code - nvarchar(50) \n");
+                sql.Append("          @menucode , -- code - nvarchar(50) \n");
                 sql.Append("          @icon , -- icon - nvarchar(50) \n");
                 sql.Append("          @path , -- path - nvarchar(50) \n");
                 sql.Append("          @menutype , -- menutype - nvarchar(50) \n");
                 sql.Append("          @seq , -- seq - nvarchar(50) \n");
                 sql.Append("          GETDATE()  -- add_time - datetime \n");
                 sql.Append("where NOT EXISTS(select * from sys_menu where code=@code)\n");
-                return db.Current_Conn.Execute(sql.ToString(), new { status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, icon = entry.icon, path = entry.path, menutype = entry.menutype, seq = entry.seq });
+                return db.Current_Conn.Execute(sql.ToString(), new { status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, menucode=entry.menucode, icon = entry.icon, path = entry.path, menutype = entry.menutype, seq = entry.seq });
             }
         }
 
