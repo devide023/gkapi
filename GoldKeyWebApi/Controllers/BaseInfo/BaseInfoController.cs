@@ -7,6 +7,7 @@ using System.Web.Http;
 using GK.Service;
 using GK.Model;
 using GK.Utils;
+using System.Configuration;
 namespace GoldKeyWebApi.Controllers.BaseInfo
 {
     /// <summary>

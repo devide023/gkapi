@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
+using System.Configuration;
 
 namespace GK.Utils
 {
@@ -123,8 +124,9 @@ namespace GK.Utils
             }
         }
 
-        public List<dynamic>  GetDLLInfo(string dllpath)
+        public List<dynamic> GetDLLInfo(string dllpath)
         {
+            string domain = ConfigurationManager.AppSettings["domain"] ?? "";
             List<dynamic> list = new List<dynamic>();
             Assembly ass = Assembly.LoadFrom(dllpath);
             string[] exist = new string[] { "ValuesController", "HomeController", "AccountController", "HelpController" };
@@ -133,10 +135,10 @@ namespace GK.Utils
             {
                 string baseurl = string.Empty;
                 IEnumerable<Attribute> attrs = type.GetCustomAttributes();
-                IEnumerable<MethodInfo> minfos = type.GetMethods().Where(t=>t.Module.Name.ToLower()== "GoldKeyWebApi.dll".ToLower());
-                foreach (Attribute attr in attrs.Where(t=>t.GetType().Name=="RoutePrefixAttribute"))
+                IEnumerable<MethodInfo> minfos = type.GetMethods().Where(t => t.Module.Name.ToLower() == "GoldKeyWebApi.dll".ToLower());
+                foreach (Attribute attr in attrs.Where(t => t.GetType().Name == "RoutePrefixAttribute"))
                 {
-                    baseurl = ((dynamic)attr).Prefix;
+                    baseurl = domain + ((dynamic)attr).Prefix;
                 }
                 foreach (MethodInfo mi in minfos)
                 {
@@ -147,10 +149,10 @@ namespace GK.Utils
                     ParameterInfo[] pars = mi.GetParameters();
                     foreach (var item in pars)
                     {
-                        parlist.Add(new { type = item.ParameterType.Name,name=item.Name,fullname=item.ParameterType.FullName });
+                        parlist.Add(new { type = item.ParameterType.Name, name = item.Name, fullname = item.ParameterType.FullName });
                     }
                     string[] marray = new string[] { "RouteAttribute", "HttpGetAttribute", "HttpPostAttribute" };
-                    foreach (Attribute mattr in mattrs.Where(t=>marray.Contains(t.GetType().Name)))
+                    foreach (Attribute mattr in mattrs.Where(t => marray.Contains(t.GetType().Name)))
                     {
                         switch (mattr.GetType().Name)
                         {
@@ -167,7 +169,7 @@ namespace GK.Utils
                                 break;
                         }
                     }
-                    list.Add(new { url = baseurl + "/" + methord_attr, way = way,param=parlist });
+                    list.Add(new { url = baseurl + "/" + methord_attr, way = way, param = parlist });
                 }
             }
             return list;
