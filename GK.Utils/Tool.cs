@@ -5,6 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Reflection;
+
 namespace GK.Utils
 {
     public class Tool
@@ -119,6 +121,56 @@ namespace GK.Utils
 
                 throw;
             }
+        }
+
+        public List<dynamic>  GetDLLInfo(string dllpath)
+        {
+            List<dynamic> list = new List<dynamic>();
+            Assembly ass = Assembly.LoadFrom(dllpath);
+            string[] exist = new string[] { "ValuesController", "HomeController", "AccountController", "HelpController" };
+            IEnumerable<Type> types = ass.GetTypes().Where(t => t.Name.Contains("Controller") && (!exist.Contains(t.Name)));
+            foreach (Type type in types)
+            {
+                string baseurl = string.Empty;
+                IEnumerable<Attribute> attrs = type.GetCustomAttributes();
+                IEnumerable<MethodInfo> minfos = type.GetMethods().Where(t=>t.Module.Name.ToLower()== "GoldKeyWebApi.dll".ToLower());
+                foreach (Attribute attr in attrs.Where(t=>t.GetType().Name=="RoutePrefixAttribute"))
+                {
+                    baseurl = ((dynamic)attr).Prefix;
+                }
+                foreach (MethodInfo mi in minfos)
+                {
+                    string methord_attr = string.Empty;
+                    string way = string.Empty;
+                    List<dynamic> parlist = new List<dynamic>();
+                    IEnumerable<Attribute> mattrs = mi.GetCustomAttributes();
+                    ParameterInfo[] pars = mi.GetParameters();
+                    foreach (var item in pars)
+                    {
+                        parlist.Add(new { type = item.ParameterType.Name,name=item.Name,fullname=item.ParameterType.FullName });
+                    }
+                    string[] marray = new string[] { "RouteAttribute", "HttpGetAttribute", "HttpPostAttribute" };
+                    foreach (Attribute mattr in mattrs.Where(t=>marray.Contains(t.GetType().Name)))
+                    {
+                        switch (mattr.GetType().Name)
+                        {
+                            case "RouteAttribute":
+                                methord_attr = ((dynamic)mattr).Template;
+                                break;
+                            case "HttpGetAttribute":
+                                way = "Get";
+                                break;
+                            case "HttpPostAttribute":
+                                way = "Post";
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    list.Add(new { url = baseurl + "/" + methord_attr, way = way,param=parlist });
+                }
+            }
+            return list;
         }
     }
 }

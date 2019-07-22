@@ -9,6 +9,9 @@ using GK.Model;
 using GK.Utils;
 namespace GoldKeyWebApi.Controllers.BaseInfo
 {
+    /// <summary>
+    /// 基础信息
+    /// </summary>
     [RoutePrefix("api/baseinfo")]
     public class BaseInfoController : ApiController
     {
@@ -16,6 +19,10 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
         {
 
         }
+        /// <summary>
+        /// 邮轮信息
+        /// </summary>
+        /// <returns></returns>
         [Route("cruises")]
         [HttpGet]
         public IHttpActionResult CruisesInfo()
@@ -31,6 +38,10 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        /// <summary>
+        /// 图标库
+        /// </summary>
+        /// <returns></returns>
         [Route("icons")]
         [HttpGet]
         public IHttpActionResult Icons()
@@ -46,6 +57,10 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 return Json(new { code = 0, msg = e.Message});
             }
         }
+        /// <summary>
+        /// 系统菜单类型
+        /// </summary>
+        /// <returns></returns>
         [Route("menutypes")]
         [HttpGet]
         public IHttpActionResult SysMenutypes()
@@ -54,6 +69,23 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
             {
                 BaseInfo_Service bis = new BaseInfo_Service();
                 var list = bis.Get_MenuType();
+                return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("dllinfo")]
+        [HttpGet]
+        public IHttpActionResult GetDLLInfo()
+        {
+            try
+            {
+                Tool tool = new Tool();
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                string dllpath = path + "bin\\GoldKeyWebApi.dll";
+                var list = tool.GetDLLInfo(dllpath);
                 return Json(new { code = 1, msg = "ok", list = list });
             }
             catch (Exception e)
