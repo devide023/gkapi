@@ -132,5 +132,43 @@ namespace GoldKeyWebApi.Controllers.RoleManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+
+        [Route("getroleapi")]
+        [HttpGet]
+        public IHttpActionResult RoleApi(int roleid)
+        {
+            try
+            {
+                RoleService rs = new RoleService();
+                var list = rs.RoleApis(roleid);
+                return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("saveroleapi")]
+        [HttpPost]
+        public IHttpActionResult RoleApi(dynamic data)
+        {
+            try
+            {
+                RoleService rs = new RoleService();
+                int roleid = Convert.ToInt32(data.roleid);
+                List<string> apilist = new List<string>();
+                foreach (var item in data.apis)
+                {
+                    apilist.Add(item.ToString());
+                }
+                int cnt = rs.SaveRoleApi(roleid, apilist);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+
     }
 }

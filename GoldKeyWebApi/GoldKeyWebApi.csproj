@@ -269,6 +269,7 @@
     <Compile Include="Controllers\RoleManager\RoleMgrController.cs" />
     <Compile Include="Controllers\UserManager\UserMgrController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="Filter\PermissionFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

@@ -77,7 +77,7 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 return Json(new { code = 0, msg = e.Message });
             }
         }
-        [Route("dllinfo")]
+        [Route("webapis")]
         [HttpGet]
         public IHttpActionResult GetDLLInfo()
         {

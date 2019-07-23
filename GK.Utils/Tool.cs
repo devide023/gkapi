@@ -129,13 +129,16 @@ namespace GK.Utils
             string domain = ConfigurationManager.AppSettings["domain"] ?? "";
             List<dynamic> list = new List<dynamic>();
             Assembly ass = Assembly.LoadFrom(dllpath);
+            int pos = dllpath.LastIndexOf("\\");
+            string dllfile = dllpath.Substring(pos + 1, dllpath.Length - (pos + 1));
             string[] exist = new string[] { "ValuesController", "HomeController", "AccountController", "HelpController" };
             IEnumerable<Type> types = ass.GetTypes().Where(t => t.Name.Contains("Controller") && (!exist.Contains(t.Name)));
             foreach (Type type in types)
             {
                 string baseurl = string.Empty;
+                List<dynamic> mlist = new List<dynamic>();
                 IEnumerable<Attribute> attrs = type.GetCustomAttributes();
-                IEnumerable<MethodInfo> minfos = type.GetMethods().Where(t => t.Module.Name.ToLower() == "GoldKeyWebApi.dll".ToLower());
+                IEnumerable<MethodInfo> minfos = type.GetMethods().Where(t => t.Module.Name.ToLower() == dllfile.ToLower());
                 foreach (Attribute attr in attrs.Where(t => t.GetType().Name == "RoutePrefixAttribute"))
                 {
                     baseurl = domain + ((dynamic)attr).Prefix;
@@ -158,6 +161,18 @@ namespace GK.Utils
                         {
                             case "RouteAttribute":
                                 methord_attr = ((dynamic)mattr).Template;
+                                int pos1 = methord_attr.LastIndexOf("{");
+                                int pos2 = methord_attr.LastIndexOf("}");
+                                if (pos1 > 0 && pos2 > pos1)
+                                {
+                                    string removestr = methord_attr.Substring(pos1, pos2+1 - pos1);
+                                    methord_attr = methord_attr.Replace(removestr, "");
+                                    int pos3 = methord_attr.LastIndexOf("/");
+                                    if (pos3 == methord_attr.Length - 1)
+                                    {
+                                        methord_attr = methord_attr.Remove(pos3, 1);
+                                    }
+                                }
                                 break;
                             case "HttpGetAttribute":
                                 way = "Get";
@@ -169,8 +184,9 @@ namespace GK.Utils
                                 break;
                         }
                     }
-                    list.Add(new { url = baseurl + "/" + methord_attr, way = way, param = parlist });
+                    mlist.Add(new { name = methord_attr, way = way, param = parlist, fullurl = baseurl + "/" + methord_attr });
                 }
+                list.Add(new { baseurl = baseurl, funlist = mlist });
             }
             return list;
         }

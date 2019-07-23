@@ -16,7 +16,8 @@ namespace GoldKeyWebApi
         {
             //从http请求的头里面获取身份验证信息，验证是否是请求发起方的ticket
             int exist = actionContext.Request.Headers.Count(t => t.Key == "X-Token");
-            if(exist==0)
+            string url = actionContext.Request.RequestUri.AbsolutePath;
+            if (exist == 0)
             {
                 HandleUnauthorizedRequest(actionContext);
             }
@@ -26,7 +27,7 @@ namespace GoldKeyWebApi
                 if (!string.IsNullOrEmpty(token))
                 {
                     //解密用户ticket,并校验用户名密码是否匹配
-                    if (ValidateTicket(token))
+                    if (ValidateTicket(token, url))
                     {
                         base.IsAuthorized(actionContext);
                     }
@@ -42,19 +43,19 @@ namespace GoldKeyWebApi
                     bool isAnonymous = attributes.Any(a => a is AllowAnonymousAttribute);
                     if (isAnonymous) base.OnAuthorization(actionContext);
                     else HandleUnauthorizedRequest(actionContext);
-                } 
+                }
             }
 
         }
 
         //校验用户名密码（正式环境中应该是数据库校验）
-        private bool ValidateTicket(string encryptTicket)
+        private bool ValidateTicket(string encryptTicket, string url)
         {
             try
             {
                 //解密Ticket
                 Tool tool = new Tool();
-                var strTicket = tool.Decrypt(encryptTicket,"apitoken");
+                var strTicket = tool.Decrypt(encryptTicket, "apitoken");
                 var index = strTicket.IndexOf("&");
                 string struid = strTicket.Substring(0, index);
                 string strPwd = strTicket.Substring(index + 1);
@@ -65,9 +66,11 @@ namespace GoldKeyWebApi
                 {
                     GK.Service.UserManager.UserService us = new GK.Service.UserManager.UserService();
                     GK.Model.public_db.sys_user user = us.Find(uid);
-                    if(user.userpwd == enpwd)
-                    { 
-                    return true;
+                    List<string> apilist = us.GetUserApis(uid).ToList();
+                    int isok = apilist.Count(t => t.ToLower() == url.ToLower());
+                    if (user.userpwd == enpwd && isok > 0)
+                    {
+                        return true;
                     }
                     else
                     { return false; }

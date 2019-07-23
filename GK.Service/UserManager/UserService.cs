@@ -313,5 +313,16 @@ namespace GK.Service.UserManager
                return db.Current_Conn.Query<sys_menu>(sql.ToString(), new { userid = userid });
             }
         }
+
+        public IEnumerable<string> GetUserApis(int userid)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT DISTINCT tb.path FROM dbo.sys_user_role ta,dbo.sys_roleapi tb WHERE USER_ID = @userid \n");
+            sql.Append("AND ta.role_id = tb.roleid");
+            using (LocalDB db = new LocalDB())
+            {
+              return db.Current_Conn.Query<string>(sql.ToString(), new { userid = userid });
+            }
+        }
     }
 }

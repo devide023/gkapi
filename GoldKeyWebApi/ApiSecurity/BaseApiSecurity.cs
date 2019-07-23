@@ -13,5 +13,6 @@ namespace GoldKeyWebApi
     [ApiSecurity]
     public class BaseApiSecurity: ApiController
     {
+        
     }
 }

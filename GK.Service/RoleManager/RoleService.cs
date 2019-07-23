@@ -193,6 +193,47 @@ namespace GK.Service.RoleManager
             }
         }
 
+        public int SaveRoleApi(int roleid, List<string> apis)
+        {
+            string tsql = "delete from sys_roleapi where roleid=@roleid";
+            StringBuilder sql = new StringBuilder();
+            sql.Append("INSERT INTO dbo.sys_roleapi \n");
+            sql.Append("        ( roleid, path ) \n");
+            sql.Append("VALUES  ( @roleid, -- roleid - int \n");
+            sql.Append("          @path  -- path - nvarchar(max) \n");
+            sql.Append("          )");
+            using (LocalDB db = new LocalDB())
+            {
+                db.Current_Conn.Open();
+                SqlTransaction transaction = db.Current_Conn.BeginTransaction();
+                try
+                {
+                    List<dynamic> list = new List<dynamic>();
+                    foreach (var item in apis)
+                    {
+                        list.Add(new { roleid = roleid, path = item });
+                    }
+                    db.Current_Conn.Execute(tsql, new { roleid = roleid }, transaction);
+                    int cnt = db.Current_Conn.Execute(sql.ToString(), list, transaction);
+                    transaction.Commit();
+                    return cnt;
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+
+        }
+        public IEnumerable<string> RoleApis(int roleid)
+        {
+            string sql = "SELECT path FROM dbo.sys_roleapi WHERE roleid=@roleid";
+            using (LocalDB db = new LocalDB())
+            {
+               return db.Current_Conn.Query<string>(sql, new { roleid = roleid });
+            }
+        }
         public IEnumerable<sys_menu> GetMenusByRoleid(List<int> roleids)
         {
             StringBuilder sql = new StringBuilder();
