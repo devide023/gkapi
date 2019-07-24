@@ -141,6 +141,7 @@ namespace GK.Service.OrganizeManager
             StringBuilder sql = new StringBuilder();
             sql.Append("update sys_organize set status = @status , -- status - int \n");
             sql.Append("          pid=@pid , -- pid - int \n");
+            sql.Append("          code=@code , -- pid - int \n");
             sql.Append("          orgtype=@orgtype , -- orgtype - int \n");
             sql.Append("          title=@title , -- title - nvarchar(max) \n");
             sql.Append("          tel=@tel , -- tel - nvarchar(50) \n");
@@ -149,7 +150,7 @@ namespace GK.Service.OrganizeManager
             sql.Append("          leader=@leader , -- leader - nvarchar(50) \n");
             sql.Append("          logo=@logo , -- logo - nvarchar(max) \n");
             sql.Append("          address=@address , -- address - nvarchar(max) \n");
-            sql.Append("          modify_time=@modify_time  -- modify_time - datetime \n");
+            sql.Append("          modify_time=getdate()  -- modify_time - datetime \n");
             sql.Append(" where id = @id \n");
             using (LocalDB db = new LocalDB())
             {
@@ -158,6 +159,7 @@ namespace GK.Service.OrganizeManager
                     id = entry.id,
                     status = entry.status,
                     pid = entry.pid,
+                    code = entry.code,
                     orgtype = entry.orgtype,
                     title = entry.title,
                     tel = entry.tel,
@@ -165,8 +167,7 @@ namespace GK.Service.OrganizeManager
                     email = entry.email,
                     leader = entry.leader,
                     logo = entry.logo,
-                    address = entry.address,
-                    modify_time = entry.modify_time
+                    address = entry.address
                 });
             }
         }
@@ -184,8 +185,75 @@ namespace GK.Service.OrganizeManager
             sql.Append("");
             using (LocalDB db = new LocalDB())
             {
-               return db.Current_Conn.Query<sys_organize>(sql.ToString(), new { pid = pid });
+                return db.Current_Conn.Query<sys_organize>(sql.ToString(), new { pid = pid });
             }
+        }
+
+        public int SaveOrganizeTree(List<sys_organize> data)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("declare @isexsit int=0 \n ");
+            sql.Append("set IDENTITY_INSERT sys_organize on \n");
+            foreach (var item in data)
+            {
+                sql.AppendFormat("select @isexsit=count(id) from sys_organize where id = {0} \n", item.id);
+                sql.Append(" if @isexsit=0 \n");
+                sql.Append(" begin \n");
+                sql.Append("INSERT INTO dbo.sys_organize \n");
+                sql.Append("        ( id,status , \n");
+                sql.Append("          pid , \n");
+                sql.Append("          orgtype , \n");
+                sql.Append("          code , \n");
+                sql.Append("          title , \n");
+                sql.Append("          tel , \n");
+                sql.Append("          fax , \n");
+                sql.Append("          email , \n");
+                sql.Append("          leader , \n");
+                sql.Append("          logo , \n");
+                sql.Append("          address , \n");
+                sql.Append("          add_time , \n");
+                sql.Append("          modify_time \n");
+                sql.Append("        ) \n");
+                sql.AppendFormat("VALUES  ( {0},{1}, -- status - int \n",item.id,item.status);
+                sql.AppendFormat("          {0}, -- pid - int \n", item.pid);
+                sql.AppendFormat("          {0}, -- orgtype - int \n", item.orgtype);
+                sql.AppendFormat("          '{0}', -- code - nvarchar(50) \n", item.code);
+                sql.AppendFormat("          '{0}', -- title - nvarchar(max) \n", item.title);
+                sql.AppendFormat("          '{0}', -- tel - nvarchar(50) \n", item.tel);
+                sql.AppendFormat("          '{0}', -- fax - nvarchar(50) \n", item.fax);
+                sql.AppendFormat("          '{0}', -- email - nvarchar(50) \n", item.email);
+                sql.AppendFormat("          '{0}', -- leader - nvarchar(50) \n", item.leader);
+                sql.AppendFormat("          '{0}', -- logo - nvarchar(max) \n", item.logo);
+                sql.AppendFormat("          '{0}', -- address - nvarchar(max) \n", item.address);
+                sql.Append("          GETDATE(), -- add_time - datetime \n");
+                sql.Append("          NULL  -- modify_time - datetime \n");
+                sql.Append("        ) \n");
+                sql.Append(" end \n");
+                sql.Append(" else \n");
+                sql.Append(" begin \n");
+                sql.AppendFormat(" update sys_organize set title='{0}' where id = {1} \n", item.title, item.id);
+                sql.Append(" end \n");
+            }
+            sql.Append("set IDENTITY_INSERT sys_organize off \n");
+            using (LocalDB db = new LocalDB())
+            {
+                db.Current_Conn.Open();
+                var transaction = db.Current_Conn.BeginTransaction();
+                List<int> delids = db.Current_Conn.Query<int>("select id from sys_organize", null, transaction).Except(data.Select(t => t.id)).ToList();
+                try
+                {
+                    db.Current_Conn.Execute("delete from sys_organize where id in @ids", new { ids = delids }, transaction);
+                    int cnt = db.Current_Conn.Execute(sql.ToString(),null,transaction);
+                    transaction.Commit();
+                    return cnt;
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+
         }
     }
 }
