@@ -148,6 +148,7 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 response.Content = new StringContent(e.Message);
                 return response;
             }
+
         }
     }
 }
