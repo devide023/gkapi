@@ -5,8 +5,6 @@ using GK.Model;
 using GK.Model.Parms;
 using GK.Model.public_db;
 using GK.DAO;
-using GK.Service;
-using GoldKeyWebApi.Controllers.UserManager;
 
 namespace UnitTestProject1
 {

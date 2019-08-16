@@ -10,6 +10,9 @@ using GK.DAO;
 using Dapper;
 using Webdiyer.WebControls.Mvc;
 using GK.Utils;
+using SolrNet;
+using CommonServiceLocator;
+
 namespace GK.Service.UserManager
 {
     public class UserService : IService<sys_user>
@@ -53,9 +56,9 @@ namespace GK.Service.UserManager
                 sql.Append("          @birthday , -- add_time - datetime \n");
                 sql.Append("          @modify_date,  -- modify_date - datetime \n");
                 sql.Append("          GETDATE() -- add_time - datetime \n");
-                sql.Append("        )");
+                sql.Append("        );\n select SCOPE_IDENTITY();\n");
 
-                return db.Current_Conn.Execute(sql.ToString(),
+                int entityid = db.Current_Conn.ExecuteScalar<int>(sql.ToString(),
                     new
                     {
                         status = entry.status,
@@ -74,6 +77,11 @@ namespace GK.Service.UserManager
                         birthday=entry.birthday,
                         modify_date = entry.modify_date
                     });
+                entry.id = entityid;
+                var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
+                solr.Add(entry);
+                solr.Commit();
+                return entityid;
             }
         }
 
@@ -122,6 +130,7 @@ namespace GK.Service.UserManager
 
         public IEnumerable<sys_user> List()
         {
+            var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();

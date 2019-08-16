@@ -64,7 +64,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
-        [ApiSecurity]
+        
         [Route("list")]
         [HttpPost]
         public IHttpActionResult UserList(userparm parm)
