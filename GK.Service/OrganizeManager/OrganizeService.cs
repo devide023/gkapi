@@ -9,10 +9,17 @@ using GK.Utils;
 using GK.DAO;
 using Dapper;
 using GK.Model.Parms;
+using SolrNet;
+using CommonServiceLocator;
 namespace GK.Service.OrganizeManager
 {
     public class OrganizeService : IService<sys_organize>, IListService<sys_organize, organizeparm>
     {
+        private ISolrOperations<sys_organize> solr = null;
+        public OrganizeService()
+        {
+            this.solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_organize>>();
+        }
         public int Add(sys_organize entry)
         {
             StringBuilder sql = new StringBuilder();
@@ -44,10 +51,10 @@ namespace GK.Service.OrganizeManager
             sql.Append("          @address , -- address - nvarchar(max) \n");
             sql.Append("          @add_time , -- add_time - datetime \n");
             sql.Append("          @modify_time  -- modify_time - datetime \n");
-            sql.Append(" WHERE NOT EXISTS (SELECT * FROM dbo.sys_organize WHERE code=@code)");
+            sql.Append(" WHERE NOT EXISTS (SELECT * FROM dbo.sys_organize WHERE code=@code)\n select SCOPE_IDENTITY();\n");
             using (LocalDB db = new LocalDB())
             {
-                return db.Current_Conn.Execute(sql.ToString(), new
+                int nodeid = db.Current_Conn.ExecuteScalar<int>(sql.ToString(), new
                 {
                     status = entry.status,
                     pid = entry.pid,
@@ -63,6 +70,14 @@ namespace GK.Service.OrganizeManager
                     add_time = entry.add_time,
                     modify_time = entry.modify_time
                 });
+                if (nodeid>0)
+                {
+                    entry.id = nodeid;
+                    entry.entitytype = "sys_organize";
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+                return nodeid;
             }
 
         }
@@ -73,7 +88,15 @@ namespace GK.Service.OrganizeManager
             sql.Append("DELETE FROM dbo.sys_organize WHERE id IN @ids");
             using (LocalDB db = new LocalDB())
             {
-                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                List<ISolrQuery> qs = new List<ISolrQuery>();
+                foreach (int id in ids)
+                {
+                    qs.Add(new SolrQuery("entitytype:sys_organize && id:" + id.ToString()));  
+                }
+                solr.Delete(new SolrMultipleCriteriaQuery(qs, "OR"));
+                solr.Commit();
+                return cnt;
             }
         }
 
@@ -83,7 +106,10 @@ namespace GK.Service.OrganizeManager
             sql.Append("DELETE FROM dbo.sys_organize WHERE id =@id");
             using (LocalDB db = new LocalDB())
             {
-                return db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                solr.Delete(new SolrQuery("entitytype:sys_organize && id:"+id.ToString()));
+                solr.Commit();
+                return cnt;
             }
         }
 
@@ -154,7 +180,7 @@ namespace GK.Service.OrganizeManager
             sql.Append(" where id = @id \n");
             using (LocalDB db = new LocalDB())
             {
-                return db.Current_Conn.Execute(sql.ToString(), new
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new
                 {
                     id = entry.id,
                     status = entry.status,
@@ -169,6 +195,14 @@ namespace GK.Service.OrganizeManager
                     logo = entry.logo,
                     address = entry.address
                 });
+                if (cnt>0)
+                {
+                    solr.Delete(new SolrQuery("entitytype:sys_organize && id:" + entry.id.ToString()));
+                    entry.entitytype = "sys_organize";
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 
@@ -245,6 +279,16 @@ namespace GK.Service.OrganizeManager
                     db.Current_Conn.Execute("delete from sys_organize where id in @ids", new { ids = delids }, transaction);
                     int cnt = db.Current_Conn.Execute(sql.ToString(),null,transaction);
                     transaction.Commit();
+                    if (cnt>0)
+                    {
+                        solr.Delete(new SolrQuery("entitytype:sys_organize"));
+                        foreach (var entry in data)
+                        {
+                            entry.entitytype = "sys_organize";
+                            solr.Add(entry);
+                        }
+                        solr.Commit();
+                    }
                     return cnt;
                 }
                 catch (Exception)

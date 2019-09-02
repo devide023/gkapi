@@ -12,11 +12,18 @@ using Webdiyer.WebControls.Mvc;
 using GK.Utils;
 using SolrNet;
 using CommonServiceLocator;
+using SolrNet.Impl;
+using System.Configuration;
+using SolrNet.Commands.Parameters;
 
 namespace GK.Service.UserManager
 {
     public class UserService : IService<sys_user>
     {
+        public UserService()
+        {
+            
+        }
         public int Add(sys_user entry)
         {
             using (LocalDB db = new LocalDB())
@@ -78,8 +85,9 @@ namespace GK.Service.UserManager
                         modify_date = entry.modify_date
                     });
                 entry.id = entityid;
+                entry.entitytype = "sys_user";
                 var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
-                solr.Add(entry);
+                var res = solr.Add(entry);
                 solr.Commit();
                 return entityid;
             }
@@ -91,7 +99,14 @@ namespace GK.Service.UserManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.AppendFormat("delete from sys_user where id = @id");
-                return db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                int ret = db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                if (ret > 0)
+                {
+                    var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
+                    solr.Delete(id.ToString());
+                    solr.Commit();
+                }
+                return ret;
             }
         }
 
@@ -101,7 +116,24 @@ namespace GK.Service.UserManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.AppendFormat("delete from sys_user where id in @ids");
-                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                int ret = db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                if (ret > 0)
+                {
+                    var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
+                    List<ISolrQuery> q = new List<ISolrQuery>();
+                    q.Add(new SolrQueryByField("entitytype", "sys_user"));
+                    List<ISolrQuery> ar = new List<ISolrQuery>();
+                    foreach (int id in ids)
+                    {
+                        ar.Add(new SolrQueryByField("id", id.ToString()));
+                    }
+                    var kw = new SolrMultipleCriteriaQuery(ar, "OR");
+                    q.Add(kw);
+                    var tq = new SolrMultipleCriteriaQuery(q, "AND");
+                    solr.Delete(solr.Query(tq));
+                    solr.Commit();
+                }
+                return ret;
             }
         }
         public int Disabel_User(List<int> ids,int status)
@@ -157,7 +189,7 @@ namespace GK.Service.UserManager
                 sql.Append("       address = @address, \n");
                 sql.Append("       tel = @tel \n");
                 sql.Append("WHERE  id = @id");
-                return db.Current_Conn.Execute(sql.ToString(),
+                int cnt = db.Current_Conn.Execute(sql.ToString(),
                     new
                     {
                         id = entry.id,
@@ -173,6 +205,17 @@ namespace GK.Service.UserManager
                         address=entry.address,
                         tel=entry.tel
                     });
+                if (cnt > 0)
+                {
+                    var solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_user>>();
+                    var q = new SolrMultipleCriteriaQuery(new[] { new SolrQuery("entitytype:sys_user"), new SolrQuery("id:" + entry.id.ToString()) }, "AND");
+                    solr.Delete(q);
+                    solr.Commit();
+                    entry.entitytype = "sys_user";
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 

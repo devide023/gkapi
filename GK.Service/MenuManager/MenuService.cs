@@ -8,10 +8,17 @@ using GK.Model.Parms.Menu;
 using Dapper;
 using GK.DAO;
 using Webdiyer.WebControls.Mvc;
+using CommonServiceLocator;
+using SolrNet;
 namespace GK.Service.MenuManager
 {
     public class MenuService : IService<sys_menu>
     {
+        private ISolrOperations<sys_menu> solr = null;
+        public MenuService()
+        {
+            solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_menu>>();
+        }
         public int Add(sys_menu entry)
         {
             using (LocalDB db = new LocalDB())
@@ -39,8 +46,16 @@ namespace GK.Service.MenuManager
                 sql.Append("          @menutype , -- menutype - nvarchar(50) \n");
                 sql.Append("          @seq , -- seq - nvarchar(50) \n");
                 sql.Append("          GETDATE()  -- add_time - datetime \n");
-                sql.Append("where NOT EXISTS(select * from sys_menu where code=@code)\n");
-                return db.Current_Conn.Execute(sql.ToString(), new { status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, menucode=entry.menucode, icon = entry.icon, path = entry.path, menutype = entry.menutype, seq = entry.seq });
+                sql.Append("where NOT EXISTS(select * from sys_menu where code=@code)\n select SCOPE_IDENTITY();\n");
+                int menuid = db.Current_Conn.ExecuteScalar<int>(sql.ToString(), entry);
+                entry.id = menuid;
+                entry.entitytype = "sys_menu";
+                if (menuid > 0)
+                {
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+                return menuid;
             }
         }
 
@@ -49,8 +64,40 @@ namespace GK.Service.MenuManager
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();
-                sql.Append("DELETE FROM dbo.sys_menu WHERE id=@id");
-                return db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                sql.Append("WITH cte_name \n");
+                sql.Append("     AS (SELECT id, \n");
+                sql.Append("                pid, \n");
+                sql.Append("                title \n");
+                sql.Append("         FROM   dbo.sys_menu \n");
+                sql.Append("         WHERE  id = @id \n");
+                sql.Append("         UNION ALL \n");
+                sql.Append("         SELECT ta.id, \n");
+                sql.Append("                ta.pid, \n");
+                sql.Append("                ta.title \n");
+                sql.Append("         FROM   dbo.sys_menu ta \n");
+                sql.Append("                JOIN cte_name tb \n");
+                sql.Append("                  ON ta.pid = tb.id) \n");
+                sql.Append("SELECT id \n");
+                sql.Append("FROM   cte_name");
+
+                IEnumerable<int> delids = db.Current_Conn.Query<int>(sql.ToString(), new { id = id });
+                StringBuilder sql1 = new StringBuilder();
+                sql1.Append("begin tran \n");
+                sql1.Append("delete from sys_menu where id in @ids\n");
+                sql1.Append("delete from sys_role_menu where menu_id in @ids\n");
+                sql1.Append("commit \n");
+                int cnt = db.Current_Conn.Execute(sql1.ToString(), new { ids = delids });
+                if (cnt > 0)
+                {
+                    List<ISolrQuery> qs = new List<ISolrQuery>();
+                    foreach (var delid in delids)
+                    {
+                        qs.Add(new SolrQuery("entitytype:sys_menu") && new SolrQuery("id: " + delid.ToString()));
+                    }
+                    solr.Delete(new SolrMultipleCriteriaQuery(qs,"OR"));
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 
@@ -60,7 +107,18 @@ namespace GK.Service.MenuManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.Append("DELETE FROM dbo.sys_menu WHERE id in @ids");
-                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                if (cnt > 0)
+                {
+                    List<ISolrQuery> qs = new List<ISolrQuery>();
+                    foreach (var id in ids)
+                    {
+                        qs.Add(new SolrQueryByField("id", id.ToString()));
+                    }
+                    solr.Delete(new SolrMultipleCriteriaQuery(qs, "OR"));
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 
@@ -128,7 +186,15 @@ namespace GK.Service.MenuManager
                 StringBuilder sql = new StringBuilder();
                 sql.Append("UPDATE dbo.sys_menu SET status=@status,pid=@pid,title=@title,code=@code,icon=@icon,path=@path,menutype=@menutype,seq=@seq WHERE id=@id");
 
-                return db.Current_Conn.Execute(sql.ToString(), new { id = entry.id, status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, icon = entry.icon, path = entry.path,menutype=entry.menutype,seq=entry.seq });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { id = entry.id, status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, icon = entry.icon, path = entry.path,menutype=entry.menutype,seq=entry.seq });
+                if (cnt > 0)
+                {
+                    solr.Delete(new SolrQuery("entitytype:sys_menu && id:" + entry.id.ToString()));
+                    entry.entitytype = "sys_menu";
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 

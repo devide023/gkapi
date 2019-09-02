@@ -25,6 +25,10 @@ namespace GoldKeyWebApi
             string solrurl = ConfigurationManager.AppSettings["solrurl"];
             var connection = new SolrConnection(solrurl);
             SolrNet.Startup.Init<sys_user>(connection);
+            SolrNet.Startup.Init<sys_role>(connection);
+            SolrNet.Startup.Init<sys_menu>(connection);
+            SolrNet.Startup.Init<sys_organize>(connection);
+
         }
     }
 }

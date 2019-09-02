@@ -45,6 +45,21 @@ namespace GoldKeyWebApi.Controllers.RoleManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        [Route("del")]
+        [HttpGet]
+        public IHttpActionResult DelRole(int id)
+        {
+            try
+            {
+                RoleService rs = new RoleService();
+                int ret = rs.Del(id);
+                return ret > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 1, msg = "数据操作失败" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
         [Route("edit")]
         [HttpPost]
         public IHttpActionResult ModifyRole(sys_role entry)

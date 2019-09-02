@@ -10,14 +10,16 @@ using GK.Model.public_db;
 using Dapper;
 using Webdiyer.WebControls.Mvc;
 using System.Data.SqlClient;
-
+using CommonServiceLocator;
+using SolrNet;
 namespace GK.Service.RoleManager
 {
     public class RoleService : IService<sys_role>
     {
+        private ISolrOperations<sys_role> solr = null;
         public RoleService()
         {
-
+            solr = ServiceLocator.Current.GetInstance<ISolrOperations<sys_role>>();
         }
 
         public int Add(sys_role entry)
@@ -31,13 +33,17 @@ namespace GK.Service.RoleManager
                 sql.Append("          @code, -- code - nvarchar(50) \n");
                 sql.Append("          @title, -- title - nvarchar(50) \n");
                 sql.Append("          GETDATE()  -- add_time - datetime \n");
-                sql.Append("          )");
-                return db.Current_Conn.Execute(sql.ToString(), new
+                sql.Append("          );select SCOPE_IDENTITY();");
+                int roleid = db.Current_Conn.ExecuteScalar<int>(sql.ToString(), new
                 {
                     status = entry.status,
                     code = entry.code,
                     title = entry.title
                 });
+                entry.id = roleid;
+                solr.Add(entry);
+                solr.Commit();
+                return roleid;
             }
         }
 
@@ -47,7 +53,18 @@ namespace GK.Service.RoleManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.Append("select * from sys_role where id in @ids");
-                return db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { ids = ids });
+                if (cnt>0)
+                {
+                    List<ISolrQuery> qs = new List<ISolrQuery>();
+                    foreach (var id in ids)
+                    {
+                        qs.Add(new SolrQuery("entitytype:sys_role && id:" + id.ToString()));
+                    }
+                    solr.Delete(new SolrMultipleCriteriaQuery(qs, "OR"));
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 
@@ -56,8 +73,17 @@ namespace GK.Service.RoleManager
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();
-                sql.Append("delete from sys_role where id=@id");
-                return db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                sql.Append("begin tran delete from sys_role where id=@id \n");
+                sql.Append("delete from sys_role_menu where role_id =@id \n");
+                sql.Append("delete from sys_roleapi where roleid =@id \n");
+                sql.Append("commit \n");
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { id = id });
+                if (cnt > 0)
+                {
+                    solr.Delete(new SolrQuery("id:"+id.ToString()) && new SolrQuery("entitytype:sys_role"));
+                    solr.Commit();
+                }
+                return cnt;
             }
         }
 
@@ -87,13 +113,22 @@ namespace GK.Service.RoleManager
             {
                 StringBuilder sql = new StringBuilder();
                 sql.Append("update sys_role set code=@code,title=@title,status=@status where id=@id");
-                return db.Current_Conn.Execute(sql.ToString(), new
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new
                 {
                     id = entry.id,
                     code = entry.code,
                     status = entry.status,
                     title = entry.title
                 });
+                if (cnt>0)
+                {
+                    solr.Delete(new SolrQuery("entitytype:sys_role && id:" + entry.id.ToString()));
+                    entry.entitytype = "sys_role";
+                    solr.Add(entry);
+                    solr.Commit();
+                }
+
+                return cnt;
             }
         }
 

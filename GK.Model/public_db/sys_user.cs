@@ -8,12 +8,20 @@ namespace GK.Model.public_db
 {
     public class sys_user
     {
-        [SolrUniqueKey("id")]
+        public sys_user()
+        {
+            entitytype = "sys_user";
+        }
+        [SolrUniqueKey("uuid")]
+        public string uuid { get; set; }
+        [SolrField("entitytype")]
+        public string entitytype { get; set; }
+        [SolrField("id")]
         public int id { get; set; }
         public int status { get; set; }
-        [SolrField("username")]
+        [SolrField("name")]
         public string username { get; set; }
-        [SolrField("usercode")]
+        [SolrField("code")]
         public string usercode { get; set; }
         public int rkey { get; set; }
         public int sex { get; set; }

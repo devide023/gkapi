@@ -75,7 +75,7 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
-        [Route("del/{id:int}")]
+        [Route("del")]
         [HttpGet]
         public IHttpActionResult Remove_Menu(int id)
         {
