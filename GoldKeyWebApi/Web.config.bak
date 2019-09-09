@@ -15,8 +15,6 @@
   <appSettings>
     <add key="domain" value="/" />
     <add key="solrurl" value="http://192.168.20.72:8080/solr/goldship"/>
-    <add key="solruser" value="admin" />
-    <add key="solrpassword" value="123456" />
   </appSettings>
   <!--
     有关 web.config 更改的说明，请参见 http://go.microsoft.com/fwlink/?LinkId=235367。

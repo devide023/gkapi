@@ -278,10 +278,9 @@ namespace GK.Service.OrganizeManager
                 {
                     db.Current_Conn.Execute("delete from sys_organize where id in @ids", new { ids = delids }, transaction);
                     int cnt = db.Current_Conn.Execute(sql.ToString(),null,transaction);
-                    transaction.Commit();
                     if (cnt>0)
                     {
-                        solr.Delete(new SolrQuery("entitytype:sys_organize"));
+                        var r = solr.Delete(new SolrQuery("entitytype:sys_organize"));
                         foreach (var entry in data)
                         {
                             entry.entitytype = "sys_organize";
@@ -289,10 +288,12 @@ namespace GK.Service.OrganizeManager
                         }
                         solr.Commit();
                     }
+                    transaction.Commit();
                     return cnt;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Console.Write(e);
                     transaction.Rollback();
                     throw;
                 }

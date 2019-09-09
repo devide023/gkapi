@@ -264,7 +264,7 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 {
                     UserService us = new UserService();
                     sys_user u = us.Find(uid);
-                    IEnumerable<sys_menu> m = us.GetUserMenus(uid);
+                    IEnumerable<dynamic> m = us.GetUserMenus(uid);
                     //List<dynamic> menulist = new List<dynamic>();
                     //foreach (var item in m.Where(t=>t.pid==0))
                     //{
