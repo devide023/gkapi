@@ -37,23 +37,6 @@ namespace GoldKeyWebApi
             SolrNet.Startup.Init<sys_role>(connection);
             SolrNet.Startup.Init<sys_menu>(connection);
             SolrNet.Startup.Init<sys_organize>(connection);
-
         }
-    }
-
-    public class DemoHttpWebRequestFactory : HttpWebRequestFactory
-    {
-        public DemoHttpWebRequestFactory(string url)
-        {
-            Create(url);
-        }         
-
-        public IHttpWebRequest Create(string url)
-        {
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-            string credentials = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("admin:123456"));
-            req.Headers.Add("Authorization", "Basic " + credentials);
-            return new HttpWebRequestAdapter((HttpWebRequest)req);
-        }
-    }
+    }    
 }

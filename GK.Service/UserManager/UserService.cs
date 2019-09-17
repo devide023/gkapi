@@ -26,12 +26,13 @@ namespace GK.Service.UserManager
         }
         public int Add(sys_user entry)
         {
+            entry.userid = new Tool().RandNum();
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();
                 sql.Append("INSERT INTO dbo.sys_user \n");
                 sql.Append("        ( status , \n");
-                sql.Append("          usercode , \n");
+                sql.Append("          usercode ,userid \n");
                 sql.Append("          sex , \n");
                 sql.Append("          username , \n");
                 sql.Append("          userpwd , \n");
@@ -49,6 +50,7 @@ namespace GK.Service.UserManager
                 sql.Append("        ) \n");
                 sql.Append("VALUES  ( @status , -- status - int \n");
                 sql.Append("          @code , -- code - nvarchar(50) \n");
+                sql.Append("          @userid,\n  ");
                 sql.Append("          @sex , -- sex - nvarchar(50) \n");
                 sql.Append("          @username , -- username - nvarchar(50) \n");
                 sql.Append("          @userpwd , -- userpwd - nvarchar(50) \n");
@@ -70,6 +72,7 @@ namespace GK.Service.UserManager
                     {
                         status = entry.status,
                         code=entry.usercode,
+                        userid = entry.userid,
                         sex=entry.sex,
                         username = entry.username,
                         userpwd = entry.userpwd,
@@ -374,6 +377,17 @@ namespace GK.Service.UserManager
             using (LocalDB db = new LocalDB())
             {
               return db.Current_Conn.Query<string>(sql.ToString(), new { userid = userid });
+            }
+        }
+
+        public string UserCode()
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT COUNT(id)+1 FROM dbo.sys_user");
+            using (LocalDB db = new LocalDB())
+            {
+                int ucode = db.Current_Conn.Query<int>(sql.ToString()).FirstOrDefault();
+                return ucode.ToString().PadLeft(5, '0');
             }
         }
     }

@@ -290,7 +290,21 @@ namespace GoldKeyWebApi.Controllers.UserManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
-
+        [Route("usercode")]
+        [HttpGet]
+        public IHttpActionResult UserCode()
+        {
+            try
+            {
+                UserService us = new UserService();
+                string ucode = us.UserCode();
+                return Json(new { code = 1, msg = "ok", usercode=ucode });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
         private IEnumerable<dynamic> SubMenus(IEnumerable<sys_menu> list,sys_menu item)
         {
             List<dynamic> menulist = new List<dynamic>();

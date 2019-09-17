@@ -33,5 +33,13 @@ namespace GK.Service
             }
         }
 
+        public IEnumerable<sys_authority_code> Get_Authority_Codes()
+        {
+            using (LocalDB db = new LocalDB())
+            {
+                return db.Current_Conn.Query<sys_authority_code>("select * from sys_authority_code order by code asc");
+            }
+        }
+
     }
 }

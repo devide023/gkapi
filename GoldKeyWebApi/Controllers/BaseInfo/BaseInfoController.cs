@@ -83,6 +83,21 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        [Route("authoritycodes")]
+        [HttpGet]
+        public IHttpActionResult GetAuthoritycodes()
+        {
+            try
+            {
+                BaseInfo_Service bis = new BaseInfo_Service();
+                var list = bis.Get_Authority_Codes();
+                return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
         [Route("webapis")]
         [HttpGet]
         public IHttpActionResult GetDLLInfo()

@@ -10,7 +10,8 @@ using Webdiyer.WebControls.Mvc;
 using GK.Model.Parms.Menu;
 using System.Text;
 using Newtonsoft.Json;
-
+using GK.Utils;
+using System.Configuration;
 namespace GoldKeyWebApi.Controllers.MenuManager
 {
     [RoutePrefix("api/menumgr")]
@@ -179,6 +180,37 @@ namespace GoldKeyWebApi.Controllers.MenuManager
                 return Json(new { code = 0, msg = e.Message });
             }
         }
+        [Route("menucode")]
+        [HttpGet]
+        public IHttpActionResult MenuCode(int pid = 0)
+        {
+            try
+            {
+                MenuService ms = new MenuService();
+                string menucode = ms.MenuCode(pid);
+                return Json(new { code = 1, msg = "ok", menucode= menucode });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("vuecom")]
+        [HttpGet]
+        public IHttpActionResult VueComponent()
+        {
+            try
+            {
+                Tool tool = new Tool();
+                string vuedir = ConfigurationManager.AppSettings["vuedir"];
+                var list = tool.VueComponents(vuedir).OrderBy(t=>t);
+                return Json(new { code = 1, msg = "ok", comlist = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
 
         private StringBuilder SubMenu(IEnumerable<sys_menu> list, sys_menu item)
         {
@@ -194,4 +226,5 @@ namespace GoldKeyWebApi.Controllers.MenuManager
             return json;
         }
     }
+
 }

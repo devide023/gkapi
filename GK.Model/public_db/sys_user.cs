@@ -23,6 +23,7 @@ namespace GK.Model.public_db
         public string username { get; set; }
         [SolrField("code")]
         public string usercode { get; set; }
+        public int userid { get; set; }
         public int rkey { get; set; }
         public int sex { get; set; }
         public string userpwd { get; set; }

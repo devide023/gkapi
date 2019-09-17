@@ -33,7 +33,7 @@ namespace GK.Service.MenuManager
                 sql.Append("          icon , \n");
                 sql.Append("          path , \n");
                 sql.Append("          menutype , \n");
-                sql.Append("          seq , \n");
+                sql.Append("          seq ,viewpath, \n");
                 sql.Append("          add_time \n");
                 sql.Append("        ) \n");
                 sql.Append("select @status , -- status - int \n");
@@ -44,7 +44,7 @@ namespace GK.Service.MenuManager
                 sql.Append("          @icon , -- icon - nvarchar(50) \n");
                 sql.Append("          @path , -- path - nvarchar(50) \n");
                 sql.Append("          @menutype , -- menutype - nvarchar(50) \n");
-                sql.Append("          @seq , -- seq - nvarchar(50) \n");
+                sql.Append("          @seq ,@viewpath, -- seq - nvarchar(50) \n");
                 sql.Append("          GETDATE()  -- add_time - datetime \n");
                 sql.Append("where NOT EXISTS(select * from sys_menu where code=@code)\n select SCOPE_IDENTITY();\n");
                 int menuid = db.Current_Conn.ExecuteScalar<int>(sql.ToString(), entry);
@@ -157,7 +157,12 @@ namespace GK.Service.MenuManager
             {
                 StringBuilder sql = new StringBuilder();
                 DynamicParameters p = new DynamicParameters();
-                sql.Append("select * FROM dbo.sys_menu where 1=1 \n");
+                sql.Append("SELECT * FROM dbo.sys_menu WHERE 1=1 \n");
+                if (!string.IsNullOrEmpty(parm.pid))
+                {
+                    sql.AppendFormat(" and pid = @pid ");
+                    p.Add("pid", parm.pid);
+                }
                 if (!string.IsNullOrEmpty(parm.key))
                 {
                     sql.AppendFormat(" and title like @title ");
@@ -184,9 +189,9 @@ namespace GK.Service.MenuManager
             using (LocalDB db = new LocalDB())
             {
                 StringBuilder sql = new StringBuilder();
-                sql.Append("UPDATE dbo.sys_menu SET status=@status,pid=@pid,title=@title,code=@code,icon=@icon,path=@path,menutype=@menutype,seq=@seq WHERE id=@id");
+                sql.Append("UPDATE dbo.sys_menu SET status=@status,pid=@pid,title=@title,code=@code,icon=@icon,path=@path,menutype=@menutype,seq=@seq,viewpath=@viewpath WHERE id=@id");
 
-                int cnt = db.Current_Conn.Execute(sql.ToString(), new { id = entry.id, status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, icon = entry.icon, path = entry.path,menutype=entry.menutype,seq=entry.seq });
+                int cnt = db.Current_Conn.Execute(sql.ToString(), new { id = entry.id, status = entry.status, pid = entry.pid, title = entry.title, code = entry.code, icon = entry.icon, path = entry.path,menutype=entry.menutype,seq=entry.seq,viewpath=entry.viewpath });
                 if (cnt > 0)
                 {
                     solr.Delete(new SolrQuery("entitytype:sys_menu && id:" + entry.id.ToString()));
@@ -232,6 +237,19 @@ namespace GK.Service.MenuManager
                 sql.Append("FROM   mtree");
                 return db.Current_Conn.Query<sys_menu>(sql.ToString(), new { pid = pid });
             }
+        }
+
+        public string MenuCode(int pid)
+        {
+            string code = string.Empty;
+            StringBuilder sql = new StringBuilder();
+            sql.Append("SELECT COUNT(id)+1 as no FROM dbo.sys_menu WHERE pid=@pid");
+            using (LocalDB db = new LocalDB())
+            {
+                int number = db.Current_Conn.Query<int>(sql.ToString(), new { pid = pid }).FirstOrDefault();
+                code = number.ToString().PadLeft(3, '0');
+            }
+            return code;
         }
     }
 }

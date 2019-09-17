@@ -219,5 +219,18 @@ namespace GK.Utils
             }
             return map;
         }
+
+        public List<string> VueComponents(string dir)
+        {
+            List<string> vuelist = new List<string>();
+            DirectoryInfo di = new DirectoryInfo(dir);
+            FileSystemInfo[] fsis = di.GetFileSystemInfos("*.vue", SearchOption.AllDirectories);
+            foreach (FileSystemInfo file in fsis)
+            {
+                string viewpath = file.FullName.Replace(dir, "").Replace(".vue","").Replace("\\","/");
+                vuelist.Add(viewpath);
+            }
+            return vuelist;
+        }        
     }
 }

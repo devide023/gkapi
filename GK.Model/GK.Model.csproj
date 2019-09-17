@@ -78,6 +78,7 @@
     <Compile Include="Parms\User\userparm.cs" />
     <Compile Include="Parms\xmtype_parm.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="public_db\sys_authority_code.cs" />
     <Compile Include="public_db\sys_menu.cs" />
     <Compile Include="public_db\sys_menutype.cs" />
     <Compile Include="public_db\sys_organize.cs" />
