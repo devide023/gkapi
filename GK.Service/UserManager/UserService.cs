@@ -32,7 +32,7 @@ namespace GK.Service.UserManager
                 StringBuilder sql = new StringBuilder();
                 sql.Append("INSERT INTO dbo.sys_user \n");
                 sql.Append("        ( status , \n");
-                sql.Append("          usercode ,userid \n");
+                sql.Append("          usercode ,userid, \n");
                 sql.Append("          sex , \n");
                 sql.Append("          username , \n");
                 sql.Append("          userpwd , \n");

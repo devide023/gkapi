@@ -13,7 +13,7 @@ using System.Web;
 using System.Web.Hosting;
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
-
+using GK.Model.public_db;
 namespace GoldKeyWebApi.Controllers.BaseInfo
 {
     /// <summary>
@@ -92,6 +92,51 @@ namespace GoldKeyWebApi.Controllers.BaseInfo
                 BaseInfo_Service bis = new BaseInfo_Service();
                 var list = bis.Get_Authority_Codes();
                 return Json(new { code = 1, msg = "ok", list = list });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("addauthcode")]
+        [HttpPost]
+        public IHttpActionResult Add_AuthCodes(sys_authority_code data)
+        {
+            try
+            {
+                BaseInfo_Service bis = new BaseInfo_Service();
+                int cnt = bis.Save_Authority_Codes(data);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "权限编码已存在" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("editauthcode")]
+        [HttpPost]
+        public IHttpActionResult Edit_AuthCodes(sys_authority_code data)
+        {
+            try
+            {
+                BaseInfo_Service bis = new BaseInfo_Service();
+                int cnt = bis.Edit_Authority_Codes(data);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
+            }
+            catch (Exception e)
+            {
+                return Json(new { code = 0, msg = e.Message });
+            }
+        }
+        [Route("delauthcode")]
+        [HttpGet]
+        public IHttpActionResult Del_AuthCodes(int id)
+        {
+            try
+            {
+                BaseInfo_Service bis = new BaseInfo_Service();
+                int cnt = bis.Remove_Authority_Codes(id);
+                return cnt > 0 ? Json(new { code = 1, msg = "ok" }) : Json(new { code = 0, msg = "error" });
             }
             catch (Exception e)
             {

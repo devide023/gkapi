@@ -41,5 +41,41 @@ namespace GK.Service
             }
         }
 
+        public int Save_Authority_Codes(sys_authority_code entity)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("INSERT INTO dbo.sys_authority_code \n");
+            sql.Append("        ( code, title, status, add_time ) \n");
+            sql.Append("SELECT @code, -- code - nvarchar(50) \n");
+            sql.Append("          @title, -- title - nvarchar(500) \n");
+            sql.Append("          @status, -- status - int \n");
+            sql.Append("          GETDATE()  -- add_time - datetime \n");
+            sql.Append("WHERE NOT EXISTS (SELECT * FROM dbo.sys_authority_code WHERE code=@code)");
+            using (LocalDB db = new LocalDB())
+            {
+               return db.Current_Conn.Execute(sql.ToString(), entity);
+            }
+        }
+
+        public int Remove_Authority_Codes(int id)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("DELETE FROM dbo.sys_authority_code  WHERE id =@id");
+            using (LocalDB db = new LocalDB())
+            {
+                return db.Current_Conn.Execute(sql.ToString(), new { id=id});
+            }
+        }
+
+        public int Edit_Authority_Codes(sys_authority_code entity)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("UPDATE dbo.sys_authority_code SET code=@code,title=@title,status=@status WHERE id =@id");
+            using (LocalDB db = new LocalDB())
+            {
+                return db.Current_Conn.Execute(sql.ToString(), entity);
+            }
+        }
+
     }
 }
